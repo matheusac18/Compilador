@@ -3,6 +3,7 @@
 #include "parse.h"
 #include "util.h"
 #include "analyze.h"
+#include "codigoIntermediario.h"
 
 
 
@@ -14,8 +15,10 @@ int main(){
 	{
 		printTreeR(arvoreSintatica);
 		printf("Árvore sintática criada...\n");
-		buildSymtab(arvoreSintatica);
-		printf("Tabela de simbolos criada...\n");
+		//buildSymtab(arvoreSintatica);
+		//printf("Tabela de simbolos criada...\n");
 	}
+
+    gerarIntermediario(arvoreSintatica);
 
 }
