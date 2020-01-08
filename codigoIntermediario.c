@@ -92,19 +92,17 @@ char *criaVariavelTemp()
 	temp[0] = 't';
 	strcat(temp,num);
 	temporario++;
-	printf("Resultado: %s\n",temp);
 	return temp;
 }
 
 char *criaLabel()
 {
 	char *temp = (char*) malloc((label%10+2)*sizeof(char));
-	char *num = (char*) malloc(((label%10+1)));
+	char *num = (char*) malloc((label%10+1)*sizeof(char));
 	sprintf(num,"%d", label);
 	temp[0] = 't';
 	strcat(temp,num);
 	label++;
-	printf("Resultado: %s\n",temp);
 	return temp;
 }
 
@@ -125,8 +123,9 @@ static void genStmt(TreeNode *t)
 			Endereco e3;
 			e3.tipo = Vazio;
 			inseriNo(move,e1,e2,e3);
+			break;
 		case FuncaoK:
-			cGen(t->child[0]);
+			cGen(t->child[1]);
 			break;
 		default:
 			break;
@@ -144,12 +143,17 @@ static void genExp(TreeNode *t)
 			Endereco e2 = atual;
 			char *dest = criaVariavelTemp();
 			atual.tipo = String;
+			atual.conteudo.nome = (char*) malloc(strlen(dest)*sizeof(char));
 			strcpy(atual.conteudo.nome,dest);
 			inseriNo(verificaOp(t->attr.op),e1,e2,atual);
 			break;
-		case IdK:
+		case VarIdK:
+			printf("Entrou1\n");
 			atual.tipo = String;
+			atual.conteudo.nome = (char*) malloc(strlen(t->attr.name)*sizeof(char));
 			strcpy(atual.conteudo.nome,t->attr.name);
+			printf("Variavel: %s\n", atual.conteudo.nome);
+			break;
 		case ConstK:
 			atual.tipo = Const;
 			atual.conteudo.val = t->attr.val;
@@ -180,16 +184,15 @@ static void cGen(TreeNode *t)
 
 void imprimeIntemediario()
 {
-	
+
 	if(inicio == NULL)
 		return;
-	printf("Entruo\n");
 	FILE *arq = fopen("intermediario.txt","w");
 
 	QuadLista q = inicio;
 	do
 	{
-		
+		printf("entrou\n");
 		fprintf(arq,"%s ",OpString[q->quad.op]);
 		switch(q->quad.end1.tipo)
 		{
@@ -228,8 +231,10 @@ void imprimeIntemediario()
 				break;
 		}
 		q = q->prox;
+		if(q==NULL)
+			printf("é nullo\n");
 	}
-	while(q->prox != NULL);
+	while(q != NULL);
 }
 
 void gerarIntermediario(TreeNode *t)
