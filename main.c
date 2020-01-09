@@ -15,8 +15,8 @@ int main(){
 	{
 		printTreeR(arvoreSintatica);
 		printf("Árvore sintática criada...\n");
-		//buildSymtab(arvoreSintatica);
-		//printf("Tabela de simbolos criada...\n");
+		buildSymtab(arvoreSintatica);
+		printf("Tabela de simbolos criada...\n");
 	}
 
     gerarIntermediario(arvoreSintatica);

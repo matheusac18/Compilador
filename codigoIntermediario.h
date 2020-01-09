@@ -2,7 +2,7 @@
 #define _CODIGOINTERMEDIARIO_H_
 #include "globals.h"
 
-typedef enum {add,sub,mult,divisao,maiorQue, menorQue, ifFalso, call, move,label_op}Operacao;
+typedef enum {add,sub,mult,divisao,maiorQue, menorQue, ifFalso, call, move,label_op, storeIm,jump,slt,sgt,slet,sget,set,sdt, funInicio, funFim, load, store, allocaMemVar, allocaMemVet}Operacao;
 
 typedef enum {Vazio,Const,String} TipoEnd;
 
@@ -12,6 +12,7 @@ typedef struct{
 		int val;
 		char *nome;
 	}conteudo;
+	int tamanho;
 }Endereco;
 
 typedef struct 

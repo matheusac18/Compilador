@@ -1,4 +1,16 @@
 int main(void)
 {
-    x = x + 1;
+    int x;
+    int y;
+    x = 1;
+    x = (x*10) + 1;
+    if(x>0)
+    {
+        x = 2+2;
+    }
+    else 
+    {
+    	x = 10;
+    	y = x;
+    }
 }
