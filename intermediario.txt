@@ -1,20 +1,12 @@
 funInicio main 
-allocaMem x 
-allocaMem y 
-storeIm 1 x 
-load x t0 
-mult t0 10 t1
-add t1 1 t2
-store t2 x 
-load x t3 
-sgt t3 0 t4
-ifFalso t4 l0 
-add 2 2 t5
-store t5 x 
-jump l1 
-label_op l0 
+allocaMemVar x 
 storeIm 10 x 
-load x t6 
-store t6 y 
-label_op l1 
+load x t0 
+sgt t0 1 t1
+ifFalso t1 l0 
+storeIm 0 x 
+load x t2 
+add t2 1 t3
+store t3 x 
+label_op l0 
 funFim main 

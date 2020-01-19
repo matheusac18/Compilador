@@ -109,12 +109,14 @@ char *criaLabel()
 	return temp;
 }
 
-/*Nós STMT: WhileK,ReturnK, CallK, VarK,VetK*/
+/*Nós STMT: WhileK,ReturnK, CallK*/
 static void genStmt(TreeNode *t)
 {
 	Endereco e1;
 	Endereco e2;
 	Endereco e3;
+	char *lblInicioWhile;
+	char *lblFimWhile;
 	switch(t->kind.stmt)
 	{
 		case IfK:
@@ -196,8 +198,54 @@ static void genStmt(TreeNode *t)
 			e2.tipo = Vazio;
 			e3.tipo = Vazio;
 
-			inseriNo(allocaMem,e1,e2,e3);
+			inseriNo(allocaMemVar,e1,e2,e3);
 			break;
+		case VetK:
+			//endereco vetor a ser alocado
+			e1.tipo = String;
+			e1.conteudo.nome = (char*) malloc(strlen(t->attr.name)*sizeof(char));
+			strcpy(e1.conteudo.nome,t->attr.name);
+
+			e2.tipo = Const;
+			e2.conteudo.val = t->child[0]->attr.val;
+			e3.tipo = Vazio;
+			inseriNo(allocaMemVet,e1,e2,e3);
+		/*case WhileK:
+			
+			//insere label de inicio do while
+			lblInicioWhile = criaLabel();
+			lblFimWhile = criaLabel();
+			e1.tipo = String;
+			e1.conteudo.nome = (char*) malloc(strlen(lblInicioWhile)*sizeof(char));
+			strcpy(e1.conteudo.nome,t->attr.name);
+			e1.tipo = String;
+
+			e2.tipo = Vazio;
+			e3.tipo = Vazio;
+			inseriNo(label_op,e1,e2,e3);
+
+			//chama cGen para o no de operação filho do while
+			cGen(t->child[0]);
+
+			//insere o no ifFalso
+
+			e1 = atual;//endereço que contem o resultado da operação do if
+
+			Endereco condFalsa;//endereço de destino do desvio
+			condFalsa.tipo = String;
+			condFalsa.conteudo.nome = (char*) malloc(strlen(lblFimWhile)*sizeof(char));
+			strcpy(condFalsa.conteudo.nome,lblFimWhile);	
+
+			e2.tipo = Vazio;
+
+			inseriNo(ifFalso,e1,condFalsa,e2);
+
+			cGen(t->child[1]);
+			e1.Tipo = Vazio;
+			e2.Tipo = Vazio;
+			e3.Tipo = Vazio;
+			inseriNo(jump, condFalsa,e1,e2,e3);
+			*/
 		default:
 			break;
 	}
@@ -320,8 +368,6 @@ void imprimeIntemediario()
 				break;
 		}
 		q = q->prox;
-		if(q==NULL)
-			printf("é nullo\n");
 	}
 	while(q != NULL);
 }
