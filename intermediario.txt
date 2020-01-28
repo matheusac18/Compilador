@@ -1,12 +1,20 @@
-funInicio main 
-allocaMemVar x 
-storeIm 10 x 
-load x t0 
-sgt t0 1 t1
-ifFalso t1 l0 
-storeIm 0 x 
-load x t2 
-add t2 1 t3
-store t3 x 
-label_op l0 
-funFim main 
+funInicio,main,___,___
+allocaMemVar,x,___,___
+storeIm,10,x,___
+label_op,l0,___,___
+load,x,main,t0
+slt,10,0,t1
+ifFalso,t1,l1,___
+load,x,main,t2
+sgt,t1,0,t3
+ifFalso,t3,l2,___
+storeIm,2,x,___
+jump,l3,___,___
+label_op,l2,___,___
+load,x,main,t4
+sub,2,1,t5
+store,t5,x,___
+label_op,l3,___,___
+jump,l0,___,___
+label_op,l1,___,___
+funFim,main,___,___

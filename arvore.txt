@@ -5,15 +5,19 @@
       Assign
         VarID: x Line: 4 Escopo: main
         Const: 10
-      If
-        Op: >
+      while
+        Op: <
           VarID: x Line: 5 Escopo: main
-          Const: 1
-        Assign
-          VarID: x Line: 7 Escopo: main
           Const: 0
-        Assign
-          VarID: x Line: 8 Escopo: main
-          Op: +
-            VarID: x Line: 8 Escopo: main
-            Const: 1
+        If
+          Op: >
+            VarID: x Line: 7 Escopo: main
+            Const: 0
+          Assign
+            VarID: x Line: 9 Escopo: main
+            Const: 2
+          Assign
+            VarID: x Line: 13 Escopo: main
+            Op: -
+              VarID: x Line: 13 Escopo: main
+              Const: 1

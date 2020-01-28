@@ -109,7 +109,7 @@ char *criaLabel()
 	return temp;
 }
 
-/*Nós STMT: WhileK,ReturnK, CallK*/
+/*Nós STMT:ReturnK, CallK*/
 static void genStmt(TreeNode *t)
 {
 	Endereco e1;
@@ -210,20 +210,21 @@ static void genStmt(TreeNode *t)
 			e2.conteudo.val = t->child[0]->attr.val;
 			e3.tipo = Vazio;
 			inseriNo(allocaMemVet,e1,e2,e3);
-		/*case WhileK:
-			
+			break;
+		case WhileK:
 			//insere label de inicio do while
 			lblInicioWhile = criaLabel();
-			lblFimWhile = criaLabel();
+			
 			e1.tipo = String;
 			e1.conteudo.nome = (char*) malloc(strlen(lblInicioWhile)*sizeof(char));
-			strcpy(e1.conteudo.nome,t->attr.name);
-			e1.tipo = String;
+			strcpy(e1.conteudo.nome,lblInicioWhile);
+			
 
 			e2.tipo = Vazio;
 			e3.tipo = Vazio;
 			inseriNo(label_op,e1,e2,e3);
 
+			lblFimWhile = criaLabel();
 			//chama cGen para o no de operação filho do while
 			cGen(t->child[0]);
 
@@ -231,7 +232,6 @@ static void genStmt(TreeNode *t)
 
 			e1 = atual;//endereço que contem o resultado da operação do if
 
-			Endereco condFalsa;//endereço de destino do desvio
 			condFalsa.tipo = String;
 			condFalsa.conteudo.nome = (char*) malloc(strlen(lblFimWhile)*sizeof(char));
 			strcpy(condFalsa.conteudo.nome,lblFimWhile);	
@@ -239,13 +239,18 @@ static void genStmt(TreeNode *t)
 			e2.tipo = Vazio;
 
 			inseriNo(ifFalso,e1,condFalsa,e2);
-
-			cGen(t->child[1]);
-			e1.Tipo = Vazio;
-			e2.Tipo = Vazio;
-			e3.Tipo = Vazio;
-			inseriNo(jump, condFalsa,e1,e2,e3);
-			*/
+			cGen(t->child[1]);//corpo do while
+			//salta para o inicio do while
+			e1.tipo = String;
+			e1.conteudo.nome = (char*) malloc(strlen(lblInicioWhile)*sizeof(char));
+			strcpy(e1.conteudo.nome,lblInicioWhile);
+			e1.tipo = String;
+			
+			e2.tipo = Vazio;
+			e3.tipo = Vazio;
+			inseriNo(jump, e1,e2,e3);
+			inseriNo(label_op,condFalsa,e2,e3);
+			break;
 		default:
 			break;
 	}
@@ -255,6 +260,7 @@ static void genExp(TreeNode *t)
 {
 	Endereco e1;
 	Endereco e2;
+	Endereco e3;
 	switch(t->kind.exp)
 	{
 		case OpK:
@@ -275,19 +281,19 @@ static void genExp(TreeNode *t)
 			e1.conteudo.nome = (char*) malloc(strlen(t->attr.name)*sizeof(char));
 			strcpy(e1.conteudo.nome,t->attr.name);
 
+			//escopo da variavel
+			e2.tipo = String;
+			e2.conteudo.nome = (char*) malloc(strlen(t->escopo)*sizeof(char));
+			strcpy(e2.conteudo.nome,t->escopo);
+
 			//endereço do registrador temporario
 			char *regTemp = criaVariavelTemp();
-			atual.tipo = String;
-			atual.conteudo.nome = (char*) malloc(strlen(t->attr.name)*sizeof(char));
-			strcpy(atual.conteudo.nome,regTemp);
-
-			//endereço vazio
-			Endereco e;
-			e.tipo = Vazio;
+			e3.tipo = String;
+			e3.conteudo.nome = (char*) malloc(strlen(regTemp)*sizeof(char));
+			strcpy(e3.conteudo.nome,regTemp);
 
 			//operação para carregar varivel da memoria para registrador
-
-			inseriNo(load,e1,atual,e);
+			inseriNo(load,e1,e2,e3);
 			
 			break;
 		case ConstK:
@@ -328,36 +334,37 @@ void imprimeIntemediario()
 	QuadLista q = inicio;
 	do
 	{
-		printf("entrou\n");
-		fprintf(arq,"%s ",OpString[q->quad.op]);
+		fprintf(arq,"%s,",OpString[q->quad.op]);
 		switch(q->quad.end1.tipo)
 		{
 			case Vazio:
+				fprintf(arq, "___,");
 				break;
 			case Const:
-				fprintf(arq, "%d ", q->quad.end1.conteudo.val);
+				fprintf(arq, "%d,", q->quad.end1.conteudo.val);
 				break;
 			case String:
-				fprintf(arq, "%s ", q->quad.end1.conteudo.nome);
+				fprintf(arq, "%s,", q->quad.end1.conteudo.nome);
 			default:
 				break;
 		}
 		switch(q->quad.end2.tipo)
 		{
 			case Vazio:
+				fprintf(arq, "___,");
 				break;
 			case Const:
-				fprintf(arq, "%d ", q->quad.end2.conteudo.val);
+				fprintf(arq, "%d,", q->quad.end2.conteudo.val);
 				break;
 			case String:
-				fprintf(arq, "%s ", q->quad.end2.conteudo.nome);
+				fprintf(arq, "%s,", q->quad.end2.conteudo.nome);
 			default:
 				break;
 		}
 		switch(q->quad.end3.tipo)
 		{
 			case Vazio:
-				fprintf(arq, "\n");
+				fprintf(arq, "___\n");
 				break;
 			case Const:
 				fprintf(arq, "%d\n", q->quad.end3.conteudo.val);
