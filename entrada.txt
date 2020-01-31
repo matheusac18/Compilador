@@ -1,16 +1,8 @@
 int main(void)
 {
     int x;
-    x = 10;
-    while(x<0)
-    {
-        if(x>0)
-        {
-            x = 2;
-        }
-        else
-        {
-            x = x - 1;
-        }
-    }
+    int v[10];
+    int i;
+    i = 1;
+    x = v[i+1];
 }

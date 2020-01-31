@@ -8,7 +8,7 @@ static void cGen(TreeNode *t);
 
 QuadLista inicio = NULL;//lista de quadruplas
 
-const char *OpString[] = {"add","sub","mult","divisao","maiorQue", "menorQue", "ifFalso", "call", "move","label_op","storeIm","jump","slt","sgt","slet","sget","set","sdt","funInicio","funFim", "load","store","allocaMemVar","allocaMemVet"};
+const char *OpString[] = {"add","sub","mult","divisao","maiorQue", "menorQue", "ifFalso", "call", "move","label_op","storeIm","jump","slt","sgt","slet","sget","set","sdt","funInicio","funFim", "loadVar","loadVet","store","allocaMemVar","allocaMemVet","retornaValor"};
 
 Endereco atual;
 
@@ -190,25 +190,34 @@ static void genStmt(TreeNode *t)
 			inseriNo(funFim,e1,e2,e3);
 			break;
 		case VarK:
-			//endereco variavel a ser alocada
+			//escopo variavel a ser alocada
 			e1.tipo = String;
-			e1.conteudo.nome = (char*) malloc(strlen(t->attr.name)*sizeof(char));
-			strcpy(e1.conteudo.nome,t->attr.name);
+			e1.conteudo.nome = (char*) malloc(strlen(t->escopo)*sizeof(char));
+			strcpy(e1.conteudo.nome,t->escopo);
 
-			e2.tipo = Vazio;
+			//endereco variavel a ser alocada
+			e2.tipo = String;
+			e2.conteudo.nome = (char*) malloc(strlen(t->attr.name)*sizeof(char));
+			strcpy(e2.conteudo.nome,t->attr.name);
+
 			e3.tipo = Vazio;
 
 			inseriNo(allocaMemVar,e1,e2,e3);
 			break;
 		case VetK:
-			//endereco vetor a ser alocado
+			//escopo do vetor
 			e1.tipo = String;
-			e1.conteudo.nome = (char*) malloc(strlen(t->attr.name)*sizeof(char));
-			strcpy(e1.conteudo.nome,t->attr.name);
+			e1.conteudo.nome = (char*) malloc(strlen(t->escopo)*sizeof(char));
+			strcpy(e1.conteudo.nome,t->escopo);
 
-			e2.tipo = Const;
-			e2.conteudo.val = t->child[0]->attr.val;
-			e3.tipo = Vazio;
+			//endereco vetor a ser alocado
+			e2.tipo = String;
+			e2.conteudo.nome = (char*) malloc(strlen(t->attr.name)*sizeof(char));
+			strcpy(e2.conteudo.nome,t->attr.name);
+
+			e3.tipo = Const;
+			e3.conteudo.val = t->child[0]->attr.val;
+			
 			inseriNo(allocaMemVet,e1,e2,e3);
 			break;
 		case WhileK:
@@ -251,6 +260,17 @@ static void genStmt(TreeNode *t)
 			inseriNo(jump, e1,e2,e3);
 			inseriNo(label_op,condFalsa,e2,e3);
 			break;
+		case ReturnK:
+			if(t->child[0]!=NULL)
+			{
+				cGen(t->child[0]);
+				e1 = atual;
+				e2.tipo = Vazio;
+				e3.tipo = Vazio;
+
+				inseriNo(retornarValor,e1,e2,e3);
+			}
+			break;
 		default:
 			break;
 	}
@@ -261,6 +281,7 @@ static void genExp(TreeNode *t)
 	Endereco e1;
 	Endereco e2;
 	Endereco e3;
+	char *regTemp;
 	switch(t->kind.exp)
 	{
 		case OpK:
@@ -269,36 +290,85 @@ static void genExp(TreeNode *t)
 			cGen(t->child[1]);
 			e2 = atual;
 			char *dest = criaVariavelTemp();
-			atual.tipo = String;
-			atual.conteudo.nome = (char*) malloc(strlen(dest)*sizeof(char));
-			strcpy(atual.conteudo.nome,dest);
+			e3.tipo = String;
+			e3.conteudo.nome = (char*) malloc(strlen(dest)*sizeof(char));
+			strcpy(e3.conteudo.nome,dest);
 
-			inseriNo(verificaOp(t->attr.op),e1,e2,atual);
+			inseriNo(verificaOp(t->attr.op),e1,e2,e3);
+			atual = e3;
 			break;
 		case VarIdK:
-			//endereço da variavel
-			e1.tipo = String;
-			e1.conteudo.nome = (char*) malloc(strlen(t->attr.name)*sizeof(char));
-			strcpy(e1.conteudo.nome,t->attr.name);
 
 			//escopo da variavel
+			e1.tipo = String;
+			e1.conteudo.nome = (char*) malloc(strlen(t->escopo)*sizeof(char));
+			strcpy(e1.conteudo.nome,t->escopo);
+			//endereço da variavel
 			e2.tipo = String;
-			e2.conteudo.nome = (char*) malloc(strlen(t->escopo)*sizeof(char));
-			strcpy(e2.conteudo.nome,t->escopo);
+			e2.conteudo.nome = (char*) malloc(strlen(t->attr.name)*sizeof(char));
+			strcpy(e2.conteudo.nome,t->attr.name);
 
 			//endereço do registrador temporario
-			char *regTemp = criaVariavelTemp();
-			e3.tipo = String;
-			e3.conteudo.nome = (char*) malloc(strlen(regTemp)*sizeof(char));
-			strcpy(e3.conteudo.nome,regTemp);
+			regTemp = criaVariavelTemp();
+			atual.tipo = String;
+			atual.conteudo.nome = (char*) malloc(strlen(regTemp)*sizeof(char));
+			strcpy(atual.conteudo.nome,regTemp);
 
 			//operação para carregar varivel da memoria para registrador
-			inseriNo(load,e1,e2,e3);
+			inseriNo(loadVar,e1,e2,atual);
 			
 			break;
 		case ConstK:
 			atual.tipo = Const;
 			atual.conteudo.val = t->attr.val;
+			break;
+		case VetIdK:
+
+			//escopo do vetor
+			e1.tipo = String;
+			e1.conteudo.nome = (char*) malloc(strlen(t->escopo)*sizeof(char));
+			strcpy(e1.conteudo.nome,t->escopo);
+			//endereço do vetor
+			e2.tipo = String;
+			e2.conteudo.nome = (char*) malloc(strlen(t->attr.name)*sizeof(char));
+			strcpy(e2.conteudo.nome,t->attr.name);
+
+			//endereço do registrador temporario
+			regTemp = criaVariavelTemp();
+			e3.tipo = String;
+			e3.conteudo.nome = (char*) malloc(strlen(regTemp)*sizeof(char));
+			strcpy(e3.conteudo.nome,regTemp);
+
+			//operação para carregar o endereço da primeira posição do vetor no registrador
+			inseriNo(loadVar,e1,e2,e3);
+
+			//endereço base
+			e1 = e3;
+
+			cGen(t->child[0]);
+
+			//deslocamento
+			e2 = atual;
+
+			//temporario com endereço final
+			regTemp = criaVariavelTemp();
+			e3.tipo = String;
+			e3.conteudo.nome = (char*) malloc(strlen(regTemp)*sizeof(char));
+			strcpy(e3.conteudo.nome,regTemp);
+
+			inseriNo(add,e1,e2,e3);
+
+			e1 = e3;
+
+			//endereço do registrador temporario
+			regTemp = criaVariavelTemp();
+			atual.tipo = String;
+			atual.conteudo.nome = (char*) malloc(strlen(regTemp)*sizeof(char));
+			strcpy(atual.conteudo.nome,regTemp);
+
+			e2.tipo = Vazio;
+			inseriNo(loadVet,e1,atual,e2);
+			break;
 		case TypeK:
 			cGen(t->child[0]);
 			break;

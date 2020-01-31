@@ -2,22 +2,17 @@
     Funcão - int - main - Linha: 1 Escopo: global
       Tipo: int
         Var x Linha: 3 Escopo: main
+      Tipo: int
+        Vetor v Linha: 4 Escopo: main
+          Const: 10
+      Tipo: int
+        Var i Linha: 5 Escopo: main
       Assign
-        VarID: x Line: 4 Escopo: main
-        Const: 10
-      while
-        Op: <
-          VarID: x Line: 5 Escopo: main
-          Const: 0
-        If
-          Op: >
-            VarID: x Line: 7 Escopo: main
-            Const: 0
-          Assign
-            VarID: x Line: 9 Escopo: main
-            Const: 2
-          Assign
-            VarID: x Line: 13 Escopo: main
-            Op: -
-              VarID: x Line: 13 Escopo: main
-              Const: 1
+        VarID: i Line: 6 Escopo: main
+        Const: 1
+      Assign
+        VarID: x Line: 7 Escopo: main
+        VetID: v Line: 7 Escopo: main
+          Op: +
+            VarID: i Line: 7 Escopo: main
+            Const: 1
