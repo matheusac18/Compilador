@@ -2,7 +2,7 @@
 #define _CODIGOINTERMEDIARIO_H_
 #include "globals.h"
 
-typedef enum {add,sub,mult,divisao,maiorQue, menorQue, ifFalso, call, move,label_op, storeIm,jump,slt,sgt,slet,sget,set,sdt, funInicio, funFim, loadVar,loadVet, store, allocaMemVar, allocaMemVet,retornarValor}Operacao;
+typedef enum {add,sub,mult,divisao,ifFalso, call, move,label_op, storeVet,jump,slt,sgt,slet,sget,set,sdt, funInicio, funFim, loadVar,loadVet, storeVar, allocaMemVar, allocaMemVet,retornarValor,param}Operacao;
 
 typedef enum {Vazio,Const,String} TipoEnd;
 
@@ -22,7 +22,6 @@ typedef struct
 }Quad;
 
 typedef struct QuadListaNo{
-  int loc;
   Quad quad;
   struct QuadListaNo *prox;
 } * QuadLista;

@@ -20,5 +20,6 @@ int main(){
 	}
 
     gerarIntermediario(arvoreSintatica);
+    printf("Codigo intermediario gerado...\n");
 
 }
