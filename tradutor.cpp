@@ -13,7 +13,7 @@ using namespace std;
 enum instrucoes:int {ADD, SUB, MULT, DIV, AND, OR, NOR, SLT, SGT,SLTE, SGET, SET, SDT, SLL, SRL,MOD,JR,ADDI,MULTI,DIVI,ANDI,BLTZ, BGTZ,BEQZ, 
 				 BEQ, BNE, LW, SW, ORI, STLI, MODI, JUMP,JAL,NOP,HALT,INPUT,OUTPUT,LUI};
 enum registradores:int {$zero, $t0, $t1, $t2, $t3, $t4, $t5, $t6, $t7, $t8, $t9, $t10, $t11, $t12, $t13, $t14, $t15, $s0, $s1, $s2, $s3, $s4,
-					$s5, $s6, $s7, $s8, $s9, $s10, $rf, $fp, $sp,$ra};
+					$s5, $s6, $s7, $s8, $s9, $auxEnd, $rf, $fp, $sp,$ra};
 string reg_string[] = { "$zero", "t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8", "t9", "t10", "t11", "t12", "t13", "t14", "t15", "$s0", "$s1", "$s2", "$s3", "$s4",
 					       "$s5", "$s6", "$s7", "$s8", "$s9", "$s10", "$rf", "$fp", "$sp", "$ra"};
 
@@ -22,29 +22,33 @@ string inst_string[] = {"add", "sub", "mult", "div", "and", "or", "nor", "slt", 
 
 int numLinha = 0;
 
-class Variavel
+class nodeVariavel
 {
 	public:
 	int memLoc;
 	string nome;
 	int tipo;
+	int tamanho;
+	nodeVariavel *prox;
 };
 
-class Escopo
+class nodeEscopo
 {
 	public:
 
 	int posAtualMem;
 	string nome;
-	list <Variavel> variaveis;
+	nodeVariavel *var;
+	nodeEscopo *prox;
 };
 
-class Label
+class nodeLabel
 {
 	public:
 
 	int numLinha;
 	string nome;
+	nodeLabel *prox;
 };
 
 
@@ -54,10 +58,10 @@ struct quadrupla
 };
 
 //lista com as posições das variaveis na memoria
-list <Escopo> varLoc;
+nodeEscopo *varLoc = NULL;
 
-//lista com o nome e numero da linha da label
-list <Label> labels;
+//lista com as posições das labels
+nodeLabel *labelLoc = NULL;
 
 //pilha com os parametros
 stack<string> parametros;
@@ -68,23 +72,234 @@ ifstream codInt;
 //arquivo de saida
 ofstream assemblyFile;
 
-
-
-void insereEscopo(string escopo)
+void imprimeFormatoR(instrucoes inst, registradores rs, registradores rt, registradores rd)
 {
-	cout << "Imprimindo;" << endl;
-	Escopo novo;
-	novo.nome = escopo;
-	novo.posAtualMem = 0;
-	varLoc.push_front(novo);
+	string instrucao = inst_string[inst]+' '+reg_string[rs]+' '+reg_string[rt]+' '+reg_string[rd];
+	if(assemblyFile.is_open())
+	{
+		assemblyFile<<instrucao<<endl;
+		numLinha++;
+	}
+}
+
+void imprimeFormatoI(instrucoes inst, registradores rs, registradores rt, string imediato)
+{
+	cout << "Imprime I" << endl;
+	string instrucao = inst_string[inst]+' '+reg_string[rs]+' '+reg_string[rt]+' '+imediato;
+	if(assemblyFile.is_open())
+	{
+		assemblyFile<<instrucao<<endl;
+		numLinha++;
+	}
+}
+
+void insereVetor(string escopo, string nome, int tamanho){
+	nodeVariavel *nova = new nodeVariavel();
+
+	if(varLoc == NULL)
+	{
+		nodeEscopo *novo = new nodeEscopo();
+		novo->posAtualMem = 0;
+		novo->nome = escopo;
+		novo->prox = NULL;
+		nova->memLoc = novo->posAtualMem;
+		nova->nome = nome;
+		nova->tipo = 1;
+		nova->tamanho = tamanho;
+		nova->prox = NULL;
+
+		novo->var = nova;
+		novo->posAtualMem = novo->posAtualMem +tamanho+1;
+
+		varLoc = novo;
+	}
+	else
+	{
+		nodeEscopo *p;
+		nodeEscopo *pAnterior;
+		bool verificaEscopo = false;
+		for(p=varLoc;p != NULL; p = p->prox)
+		{
+			if(p->nome == escopo)
+			{
+				verificaEscopo = true;
+				break;
+			}
+			pAnterior = p;
+		}
+
+		if(verificaEscopo == true)//escopo já está na lista
+		{
+			nodeVariavel *q;
+			nodeVariavel *qAnterior;
+			bool verificaVar = false;
+			for(q=p->var;q != NULL; q = q->prox)
+			{
+				if(q->nome == nome)
+				{
+					verificaVar = true;
+					break;
+				}
+				qAnterior = q;
+			}
+
+			if(verificaVar == false)//vetor não declarados
+			{
+				nova->memLoc = p->posAtualMem;
+				nova->nome = nome;
+				nova->tipo = 1;
+				nova->tamanho = -1;
+				nova->prox = NULL;
+				p->posAtualMem = p->posAtualMem+tamanho+1;
+				qAnterior->prox = nova;
+			}
+		}
+		else//escopo não está na lista
+		{
+			nodeEscopo *novo = new nodeEscopo();
+			novo->posAtualMem = 0;
+			novo->nome = escopo;
+			novo->prox = NULL;
+
+			nova->memLoc = novo->posAtualMem;
+			nova->nome = nome;
+			nova->tipo = 1;
+			nova->tamanho = -1;
+			nova->prox = NULL;
+
+			novo->var = nova;
+			novo->posAtualMem = novo->posAtualMem + tamanho + 1;
+
+			pAnterior->prox = novo;
+		}
+	}
+
+	if(escopo == "global" && tamanho>0)
+	{
+		imprimeFormatoI(ADDI,$zero,$auxEnd,to_string(nova->memLoc+1));
+		imprimeFormatoI(SW,$auxEnd,$zero,to_string(nova->memLoc));
+	}
+	else
+	{
+		if(tamanho>0)
+		{
+			imprimeFormatoI(ADDI,$fp,$auxEnd,to_string(nova->memLoc+1));
+			imprimeFormatoI(SW,$auxEnd,$fp,to_string(nova->memLoc));
+		}
+		imprimeFormatoI(ADDI,$sp,$sp,to_string(tamanho+1));
+	}
+
+}
+
+void insereVariavel(string escopo, string nome)
+{
+	if(varLoc == NULL)
+	{
+		nodeEscopo *novo = new nodeEscopo();
+		novo->posAtualMem = 0;
+		novo->nome = escopo;
+		novo->prox = NULL;
+
+		nodeVariavel *nova = new nodeVariavel();
+		nova->memLoc = novo->posAtualMem;
+		nova->nome = nome;
+		nova->tipo = 0;
+		nova->tamanho = -1;
+		nova->prox = NULL;
+
+		novo->var = nova;
+		novo->posAtualMem = novo->posAtualMem + 1;
+
+		varLoc = novo;
+	}
+	else
+	{
+		nodeEscopo *p;
+		nodeEscopo *pAnterior;
+		bool verificaEscopo = false;
+		for(p=varLoc;p != NULL; p = p->prox)
+		{
+			if(p->nome == escopo)
+			{
+				verificaEscopo = true;
+				break;
+			}
+			pAnterior = p;
+		}
+
+		if(verificaEscopo == true)//escopo já está na lista
+		{
+			nodeVariavel *q;
+			nodeVariavel *qAnterior;
+			bool verificaVar = false;
+			for(q=p->var;q != NULL; q = q->prox)
+			{
+				if(q->nome == nome)
+				{
+					verificaVar = true;
+					break;
+				}
+				qAnterior = q;
+			}
+
+			if(verificaVar == false)//variavel não declarada
+			{
+				nodeVariavel *nova = new nodeVariavel();
+				nova->memLoc = p->posAtualMem;
+				nova->nome = nome;
+				nova->tipo = 0;
+				nova->tamanho = -1;
+				nova->prox = NULL;
+				p->posAtualMem = p->posAtualMem+1;
+				qAnterior->prox = nova;
+			}
+		}
+		else//escopo não está na lista
+		{
+			nodeEscopo *novo = new nodeEscopo();
+			novo->posAtualMem = 0;
+			novo->nome = escopo;
+			novo->prox = NULL;
+
+			nodeVariavel *nova = new nodeVariavel();
+			nova->memLoc = novo->posAtualMem;
+			nova->nome = nome;
+			nova->tipo = 0;
+			nova->tamanho = -1;
+			nova->prox = NULL;
+
+			novo->var = nova;
+			novo->posAtualMem = novo->posAtualMem + 1;
+
+			pAnterior->prox = novo;
+		}
+	}
+}
+
+void imprimeVariaveis()
+{
+	nodeEscopo *p = varLoc;
+	nodeVariavel *q;
+	do
+	{
+		cout << "Escopo:" << p->nome << endl;
+		q=p->var;
+		do
+		{
+			cout<<"  "<<q->nome<< " pos: "<< q->memLoc<<endl;
+			q=q->prox;
+		}while(q!= NULL);
+		p =p->prox;
+	}while(p != NULL);
+
 }
 
 void insereLabel(string nome)
 {
-	Label nova;
+	/*Label nova;
 	nova.nome = nome;
 	nova.numLinha = numLinha;
-	labels.push_front(nova);
+	labels.push_front(nova);*/
 }
 
 void pegaLinhaIntermediario(quadrupla *quad)
@@ -115,26 +330,7 @@ void pegaLinhaIntermediario(quadrupla *quad)
 	}
 }
 
-void imprimeFormatoR(instrucoes inst, registradores rs, registradores rt, registradores rd)
-{
-	string instrucao = inst_string[inst]+' '+reg_string[rs]+' '+reg_string[rt]+' '+reg_string[rd];
-	if(assemblyFile.is_open())
-	{
-		assemblyFile<<instrucao<<endl;
-		numLinha++;
-	}
-}
 
-void imprimeFormatoI(instrucoes inst, registradores rs, registradores rt, string imediato)
-{
-	cout << "Imprime I" << endl;
-	string instrucao = inst_string[inst]+' '+reg_string[rs]+' '+reg_string[rt]+' '+imediato;
-	if(assemblyFile.is_open())
-	{
-		assemblyFile<<instrucao<<endl;
-		numLinha++;
-	}
-}
 
 registradores pegaRegistradorNumero(string r)
 {
@@ -296,10 +492,22 @@ int main()
 		}
 		else if(quad.op == "allocaMemVar")
 		{
-			imprimeFormatoI(ADDI,$sp,$sp,"1");
+			insereVariavel(quad.end1,quad.end2);
+			if(quad.end1 != "global")//incrementa $sp apenas se a varivel for alocada na pilha
+			{
+				imprimeFormatoI(ADDI,$sp,$sp,"1");//move uma posição o ponteiro $sp
+			}
 		}
 		else if(quad.op == "allocaMemVet")
 		{
+			if(stoi(quad.end3)==-1)//vetor parametro
+			{
+				insereVetor(quad.end1,quad.end2, 0);
+			}
+			else
+			{
+				insereVetor(quad.end1,quad.end2, stoi(quad.end3));
+			}
 
 		}
 		else if(quad.op == "retornaValor")
@@ -314,6 +522,9 @@ int main()
 
 
 	}
+	cout << "Imprimindo variaveis: " << endl;
+	imprimeVariaveis();
+
 	codInt.close();
 	assemblyFile.close();
 	cout << "Tradução para Assembly concluida..." << endl;

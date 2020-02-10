@@ -1,0 +1,7 @@
+addi $sp $sp 1
+addi $fp $s10 1
+sw $s10 $fp 0
+addi $sp $sp 16
+addi $fp $s10 17
+sw $s10 $fp 16
+addi $sp $sp 16
