@@ -2,6 +2,7 @@
 #include "analyze.h"
 #include "stdio.h"
 #include "symtab.h"
+#include "util.h"
 
 FILE* symTabFile;
 
@@ -86,7 +87,10 @@ static void insertNode(TreeNode * t)
         {
         case VarIdK:
             if(st_lookup(t->attr.name,"global"))
+            {
                 st_insert(t->attr.name,"global",0,0,t->lineno);
+                t->escopo = copyString("global");//se encontrou o VarIdK  no escopo global altera seu escopo para global
+            }
             else if (st_lookup(t->attr.name,t->escopo)) // erro 1
                 st_insert(t->attr.name,t->escopo,0,0,t->lineno);
             else
@@ -96,7 +100,10 @@ static void insertNode(TreeNode * t)
             if (st_lookup(t->attr.name,t->escopo))
                 st_insert(t->attr.name,t->escopo,0,0,t->lineno);
             else if (st_lookup(t->attr.name,"global")) // erro 1
+            {
                 st_insert(t->attr.name,"global",0,0,t->lineno);
+                t->escopo = copyString("global");//se encontrou o VetIdK  no escopo global altera seu escopo para global
+            }
             else
                 printf("ERRO SEMÂNTICO: Vetor '%s' não declarado na linha: %d\n", t->attr.name,t->lineno);
             break;

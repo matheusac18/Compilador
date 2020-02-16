@@ -10,14 +10,14 @@
 
 using namespace std; 
 
-enum instrucoes:int {ADD, SUB, MULT, DIV, AND, OR, NOR, SLT, SGT,SLTE, SGET, SET, SDT, SLL, SRL,MOD,JR,ADDI,MULTI,DIVI,ANDI,BLTZ, BGTZ,BEQZ, 
-				 BEQ, BNE, LW, SW, ORI, STLI, MODI, JUMP,JAL,NOP,HALT,INPUT,OUTPUT,LUI};
+enum instrucoes:int {ADD, SUB, MULT, DIV, AND, OR, NOR, SLT, SGT,SLTE, SGET, SET, SDT, SGTI,SLTEI, SGETI, SETI, SDTI, SLL, SRL,MOD,JR,ADDI,MULTI,DIVI,ANDI,BLTZ, BGTZ,BEQZ, 
+				 BEQ, BNE, LW, SW, ORI, SLTI, MODI, JUMP,JAL,NOP,HALT,INPUT,OUTPUT,LUI};
 enum registradores:int {$zero, $t0, $t1, $t2, $t3, $t4, $t5, $t6, $t7, $t8, $t9, $t10, $t11, $t12, $t13, $t14, $t15, $s0, $s1, $s2, $s3, $s4,
 					$s5, $s6, $s7, $s8, $s9, $auxEnd, $rf, $fp, $sp,$ra};
 string reg_string[] = { "$zero", "t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8", "t9", "t10", "t11", "t12", "t13", "t14", "t15", "$s0", "$s1", "$s2", "$s3", "$s4",
 					       "$s5", "$s6", "$s7", "$s8", "$s9", "$s10", "$rf", "$fp", "$sp", "$ra"};
 
-string inst_string[] = {"add", "sub", "mult", "div", "and", "or", "nor", "slt", "sgt","slte", "sget", "set", "sdt", "sll", "srl","mod","jr","addi","multi","divi","andi","bltz", "bgtz","beqz", 
+string inst_string[] = {"add", "sub", "mult", "div", "and", "or", "nor", "slt", "sgt","slte", "sget", "set", "sdt", "sgti","sltei", "sgeti", "seti", "sdti","sll", "srl","mod","jr","addi","multi","divi","andi","bltz", "bgtz","beqz", 
 				 			 "beq", "bne", "lw", "sw", "ori", "slti", "modi", "jump","jal","nop","halt","input","output","lui"};
 
 int numLinha = 0;
@@ -51,6 +51,29 @@ class nodeLabel
 	nodeLabel *prox;
 };
 
+class nodeInstrucao
+{
+	public:
+
+	instrucoes inst;
+	registradores rs;
+	registradores rt;
+	registradores rd;
+	string imediato;
+	string endereco;
+	int tipo; // 1- Tipo R, 2 - Tipo I, 3 - Tipo J
+	nodeInstrucao *prox;
+};
+
+class listaInstrucao
+{
+	public:
+
+	nodeInstrucao *primeira;
+	nodeInstrucao *ultima;
+};
+
+
 
 struct quadrupla
 {
@@ -72,25 +95,124 @@ ifstream codInt;
 //arquivo de saida
 ofstream assemblyFile;
 
+//lista de instruções
+listaInstrucao lst;
+
+//posição a partir da qual se iniciam as declarações de variveis dentro de um frame
+int frameIni = 0;
+
 void imprimeFormatoR(instrucoes inst, registradores rs, registradores rt, registradores rd)
 {
-	string instrucao = inst_string[inst]+' '+reg_string[rs]+' '+reg_string[rt]+' '+reg_string[rd];
+	/*string instrucao = inst_string[inst]+' '+reg_string[rs]+' '+reg_string[rt]+' '+reg_string[rd];
 	if(assemblyFile.is_open())
 	{
 		assemblyFile<<instrucao<<endl;
 		numLinha++;
+	}*/
+	if(lst.primeira == NULL)
+	{
+		nodeInstrucao *nova = new nodeInstrucao();
+		nova->inst = inst;
+		nova->rt = rt;
+		nova->rs = rs;
+		nova->rd = rd;
+		nova->prox = NULL;
+		nova->tipo = 1;
+		
+		lst.primeira = nova;
+		lst.ultima = nova;
 	}
+	else
+	{
+		nodeInstrucao *nova = new nodeInstrucao();
+		nova->inst = inst;
+		nova->rt = rt;
+		nova->rs = rs;
+		nova->rd = rd;
+		nova->prox = NULL;
+		nova->tipo = 1;
+		
+		lst.ultima->prox = nova;
+		lst.ultima = nova;
+	}
+
+	numLinha++;
 }
 
 void imprimeFormatoI(instrucoes inst, registradores rs, registradores rt, string imediato)
 {
 	cout << "Imprime I" << endl;
-	string instrucao = inst_string[inst]+' '+reg_string[rs]+' '+reg_string[rt]+' '+imediato;
+	/*string instrucao = inst_string[inst]+' '+reg_string[rs]+' '+reg_string[rt]+' '+imediato;
 	if(assemblyFile.is_open())
 	{
 		assemblyFile<<instrucao<<endl;
 		numLinha++;
+	}*/
+	if(lst.primeira == NULL)
+	{
+		nodeInstrucao *nova = new nodeInstrucao();
+		nova->inst = inst;
+		nova->rt = rt;
+		nova->rs = rs;
+		nova->imediato = imediato;
+		nova->prox = NULL;
+		nova->tipo = 2;
+		
+		lst.primeira = nova;
+		lst.ultima = nova;
 	}
+	else
+	{
+		nodeInstrucao *nova = new nodeInstrucao();
+		nova->inst = inst;
+		nova->rt = rt;
+		nova->rs = rs;
+		nova->imediato = imediato;
+		nova->prox = NULL;
+		nova->tipo = 2;
+
+		lst.ultima->prox = nova;
+		lst.ultima = nova;
+	}
+
+	numLinha++;
+}
+
+void imprimeFormatoJ(instrucoes inst, string endereco)
+{
+	cout << "Imprime J" << endl;
+	/*string instrucao = inst_string[inst]+' '+endereco;
+	if(assemblyFile.is_open())
+	{
+		assemblyFile<<instrucao<<endl;
+		numLinha++;
+	}*/
+
+	if(lst.primeira == NULL)
+	{
+		nodeInstrucao *nova = new nodeInstrucao();
+		nova->inst = inst;
+		nova->endereco = endereco;
+		nova->prox = NULL;
+		nova->tipo = 3;
+		
+		lst.primeira = nova;
+		lst.ultima = nova;
+	}
+	else
+	{
+		nodeInstrucao *nova = new nodeInstrucao();
+		nova->inst = inst;
+		nova->endereco = endereco;
+		nova->prox = NULL;
+		nova->tipo = 3;
+		
+		
+		lst.ultima->prox = nova;
+		lst.ultima = nova;
+	}
+
+	numLinha++;
 }
 
 void insereVetor(string escopo, string nome, int tamanho){
@@ -99,7 +221,7 @@ void insereVetor(string escopo, string nome, int tamanho){
 	if(varLoc == NULL)
 	{
 		nodeEscopo *novo = new nodeEscopo();
-		novo->posAtualMem = 0;
+		novo->posAtualMem = frameIni;
 		novo->nome = escopo;
 		novo->prox = NULL;
 		nova->memLoc = novo->posAtualMem;
@@ -196,7 +318,7 @@ void insereVariavel(string escopo, string nome)
 	if(varLoc == NULL)
 	{
 		nodeEscopo *novo = new nodeEscopo();
-		novo->posAtualMem = 0;
+		novo->posAtualMem = frameIni;
 		novo->nome = escopo;
 		novo->prox = NULL;
 
@@ -294,12 +416,63 @@ void imprimeVariaveis()
 
 }
 
+int pegaEndereco(string escopo, string nome)
+{
+	nodeEscopo *p;
+	for(p=varLoc;p!=NULL;p = p->prox)
+	{
+		if(p->nome == escopo)
+			break;
+	}
+	nodeVariavel *q;
+	for(q=p->var;q!=NULL;q = q->prox)
+	{
+		if(q->nome == nome)
+			break;
+	}
+	//cout << q->memLoc << endl;
+	return q->memLoc;
+}
+
+void imprimeLabels()
+{
+	nodeLabel *p = labelLoc;
+	do
+	{
+		cout << "Label:" << p->nome << endl;
+		p =p->prox;
+	}while(p != NULL);
+
+}
+
 void insereLabel(string nome)
 {
-	/*Label nova;
-	nova.nome = nome;
-	nova.numLinha = numLinha;
-	labels.push_front(nova);*/
+	if(labelLoc == NULL)
+	{
+		nodeLabel *nova = new nodeLabel();
+		nova->numLinha = numLinha;
+		nova->nome = nome;
+		nova->prox = NULL;
+		labelLoc = nova;
+	}
+	else
+	{
+		nodeLabel *p;
+		nodeLabel *pAnterior;
+
+		for(p=labelLoc; p != NULL; p = p->prox)
+		{
+			pAnterior = p;
+		}
+
+		nodeLabel *nova = new nodeLabel();
+		nova->numLinha = numLinha;
+		nova->nome = nome;
+		nova->prox = NULL;
+
+		pAnterior->prox = nova;
+
+	}
 }
 
 void pegaLinhaIntermediario(quadrupla *quad)
@@ -355,6 +528,61 @@ bool ehNumero(string s)
 
 	return result;
 }
+int labelLinha(string label)
+{
+	nodeLabel *p;
+	for(p=labelLoc;p!=NULL;p = p->prox)
+	{
+		if(p->nome == label)
+			break;
+	}
+	return p->numLinha;
+}
+
+void imprimeInstrucoes()
+{
+	nodeInstrucao *p;
+
+	for(p=lst.primeira;p!=NULL;p = p->prox)
+	{
+		if(p->tipo == 1)
+		{
+			string instrucao = inst_string[p->inst]+' '+reg_string[p->rs]+' '+reg_string[p->rt]+' '+reg_string[p->rd];
+			if(assemblyFile.is_open())
+			{
+				assemblyFile<<instrucao<<endl;
+				numLinha++;
+			}
+		}
+		else if(p->tipo == 2)
+		{
+			string instrucao;
+
+			if(p->inst == BEQ)
+			{
+				instrucao = inst_string[p->inst]+' '+reg_string[p->rs]+' '+reg_string[p->rt]+' '+to_string(labelLinha(p->imediato));//substituição do label pelo numero da linha
+			}
+			else
+			{
+				instrucao = inst_string[p->inst]+' '+reg_string[p->rs]+' '+reg_string[p->rt]+' '+p->imediato;
+			}
+			if(assemblyFile.is_open())
+			{
+				assemblyFile<<instrucao<<endl;
+				numLinha++;
+			}
+		}
+		else if(p->tipo == 3)
+		{
+			string instrucao = inst_string[p->inst]+' '+to_string(labelLinha(p->endereco));
+			if(assemblyFile.is_open())
+			{
+				assemblyFile<<instrucao<<endl;
+				numLinha++;
+			}
+		}
+	}
+}
 
 int main()
 {
@@ -363,9 +591,12 @@ int main()
 	assemblyFile.open("assembly.txt");
 	quadrupla quad;
 	string line;
+	lst.primeira = NULL;
+	lst.ultima = NULL;
 	while(!codInt.eof())
 	{
 		pegaLinhaIntermediario(&quad);
+
 		if(quad.op == "add")
 		{
 			if(ehNumero(quad.end1) && ehNumero(quad.end2))//os dois operadores são numeros
@@ -424,7 +655,7 @@ int main()
 		}
 		else if(quad.op == "ifFalso")
 		{
-
+			imprimeFormatoI(BEQ,pegaRegistradorNumero(quad.end1),$zero,quad.end2);
 		}
 		else if(quad.op == "call")
 		{
@@ -437,18 +668,38 @@ int main()
 		else if(quad.op == "label_op")
 		{
 			insereLabel(quad.end1);//insere o label na lista
+			
 		}
 		else if(quad.op == "storeVet")
 		{
-
+			
 		}
 		else if(quad.op == "jump")
 		{
-
+			imprimeFormatoJ(JUMP,quad.end1);
 		}
 		else if(quad.op == "slt")
 		{
-
+			if(ehNumero(quad.end1) && ehNumero(quad.end2))//os dois operadores são numeros
+			{
+				imprimeFormatoI(ADDI,$zero,pegaRegistradorNumero(quad.end3),quad.end1);//coloca o primeiro operando no registrador de destino RT
+				imprimeFormatoI(SLTI,pegaRegistradorNumero(quad.end3),pegaRegistradorNumero(quad.end3),quad.end2);//verifico se o operando presente no registrador é menor q o imediato
+			}
+			else if (!ehNumero(quad.end1) && !ehNumero(quad.end2))//SLT
+			{
+				imprimeFormatoR(SLT,pegaRegistradorNumero(quad.end1),pegaRegistradorNumero(quad.end2),pegaRegistradorNumero(quad.end3));
+			}
+			else//SLTI
+			{
+				if(ehNumero(quad.end1))
+				{
+					imprimeFormatoI(SGTI,pegaRegistradorNumero(quad.end2),pegaRegistradorNumero(quad.end3),quad.end1);
+				}
+				else
+				{
+					imprimeFormatoI(SLTI,pegaRegistradorNumero(quad.end1),pegaRegistradorNumero(quad.end3),quad.end2);
+				}
+			}
 		}
 		else if(quad.op == "sgt")
 		{
@@ -471,8 +722,8 @@ int main()
 
 		}
 		else if(quad.op == "funInicio")
-		{
-
+		{	
+			insereLabel(quad.end1);
 		}
 		else if(quad.op == "funFim")
 		{
@@ -480,15 +731,48 @@ int main()
 		}
 		else if(quad.op == "loadVar")
 		{
-
+			string memLoc = to_string(pegaEndereco(quad.end1,quad.end2));
+			if(quad.end1 == "global")
+			{
+				imprimeFormatoI(LW,$zero,pegaRegistradorNumero(quad.end3),memLoc);
+			}
+			else
+			{
+				imprimeFormatoI(LW,$fp,pegaRegistradorNumero(quad.end3),memLoc);
+			}
+			cout << "Buscou na mem" << endl;
 		}
 		else if(quad.op == "loadVet")
 		{
-
+			imprimeFormatoI(LW,pegaRegistradorNumero(quad.end1),pegaRegistradorNumero(quad.end2),"0");
 		}
 		else if(quad.op == "storeVar")
 		{
-
+			string memLoc = to_string(pegaEndereco(quad.end3,quad.end2));
+			if(ehNumero(quad.end1))//store de imediato
+			{
+				//coloca o imediato no registrador auxEnd
+				imprimeFormatoI(ADDI,$zero,$auxEnd,quad.end1);
+				if(quad.end3 == "global")//se o escopo for global
+				{
+					imprimeFormatoI(SW,$zero,$auxEnd,memLoc);
+				}
+				else
+				{
+					imprimeFormatoI(SW,$fp,$auxEnd,memLoc);
+				}
+			}
+			else
+			{
+				if(quad.end3 == "global")//se o escopo for global
+				{
+					imprimeFormatoI(SW,$zero,pegaRegistradorNumero(quad.end1),memLoc);
+				}
+				else
+				{
+					imprimeFormatoI(SW,$fp,pegaRegistradorNumero(quad.end1),memLoc);
+				}
+			}
 		}
 		else if(quad.op == "allocaMemVar")
 		{
@@ -523,8 +807,8 @@ int main()
 
 	}
 	cout << "Imprimindo variaveis: " << endl;
-	imprimeVariaveis();
-
+	//imprimeVariaveis();
+	imprimeInstrucoes();
 	codInt.close();
 	assemblyFile.close();
 	cout << "Tradução para Assembly concluida..." << endl;

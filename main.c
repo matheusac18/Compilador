@@ -13,12 +13,13 @@ int main(){
 	arvoreSintatica = parse();
 	if(arvoreSintatica != NULL)
 	{
-		printTreeR(arvoreSintatica);
+		//printTreeR(arvoreSintatica);
 		printf("Árvore sintática criada...\n");
 		buildSymtab(arvoreSintatica);
 		printf("Tabela de simbolos criada...\n");
 	}
 
+	printTreeR(arvoreSintatica);//printando a arvore sintatica depois da tabela de simbolos pq durante a analise semantica ainda existe a troca de escopos
     gerarIntermediario(arvoreSintatica);
     printf("Codigo intermediario gerado...\n");
 

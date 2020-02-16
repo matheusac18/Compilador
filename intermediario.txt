@@ -1,3 +1,9 @@
-allocaMemVet,sort,a,-1
-allocaMemVet,main,vetor1,15
-allocaMemVet,main,vetor2,15
+funInicio,main,___,___
+allocaMemVar,main,x,___
+storeVar,3,x,main
+loadVar,main,x,t0
+slt,t0,10,t1
+ifFalso,t1,l0,___
+storeVar,10,x,main
+label_op,l0,___,___
+funFim,main,___,___
