@@ -10,14 +10,14 @@
 
 using namespace std; 
 
-enum instrucoes:int {ADD, SUB, MULT, DIV, AND, OR, NOR, SLT, SGT,SLTE, SGET, SET, SDT, SGTI,SLTEI, SGETI, SETI, SDTI, SLL, SRL,MOD,JR,ADDI,MULTI,DIVI,ANDI,BLTZ, BGTZ,BEQZ, 
+enum instrucoes:int {ADD, SUB, MULT, DIV, AND, OR, NOR, SLT, SGT,SLET, SGET, SET, SDT, SGTI,SLETI, SGETI, SETI, SDTI, SLL, SRL,MOD,JR,ADDI,MULTI,DIVI,ANDI,BLTZ, BGTZ,BEQZ, 
 				 BEQ, BNE, LW, SW, ORI, SLTI, MODI, JUMP,JAL,NOP,HALT,INPUT,OUTPUT,LUI};
 enum registradores:int {$zero, $t0, $t1, $t2, $t3, $t4, $t5, $t6, $t7, $t8, $t9, $t10, $t11, $t12, $t13, $t14, $t15, $s0, $s1, $s2, $s3, $s4,
 					$s5, $s6, $s7, $s8, $s9, $auxEnd, $rf, $fp, $sp,$ra};
 string reg_string[] = { "$zero", "t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8", "t9", "t10", "t11", "t12", "t13", "t14", "t15", "$s0", "$s1", "$s2", "$s3", "$s4",
 					       "$s5", "$s6", "$s7", "$s8", "$s9", "$s10", "$rf", "$fp", "$sp", "$ra"};
 
-string inst_string[] = {"add", "sub", "mult", "div", "and", "or", "nor", "slt", "sgt","slte", "sget", "set", "sdt", "sgti","sltei", "sgeti", "seti", "sdti","sll", "srl","mod","jr","addi","multi","divi","andi","bltz", "bgtz","beqz", 
+string inst_string[] = {"add", "sub", "mult", "div", "and", "or", "nor", "slt", "sgt","slet", "sget", "set", "sdt", "sgti","sleti", "sgeti", "seti", "sdti","sll", "srl","mod","jr","addi","multi","divi","andi","bltz", "bgtz","beqz", 
 				 			 "beq", "bne", "lw", "sw", "ori", "slti", "modi", "jump","jal","nop","halt","input","output","lui"};
 
 int numLinha = 0;
@@ -299,14 +299,14 @@ void insereVetor(string escopo, string nome, int tamanho){
 	if(escopo == "global" && tamanho>0)
 	{
 		imprimeFormatoI(ADDI,$zero,$auxEnd,to_string(nova->memLoc+1));
-		imprimeFormatoI(SW,$auxEnd,$zero,to_string(nova->memLoc));
+		imprimeFormatoI(SW,$zero,$auxEnd,to_string(nova->memLoc));
 	}
 	else
 	{
 		if(tamanho>0)
 		{
 			imprimeFormatoI(ADDI,$fp,$auxEnd,to_string(nova->memLoc+1));
-			imprimeFormatoI(SW,$auxEnd,$fp,to_string(nova->memLoc));
+			imprimeFormatoI(SW,$fp,$auxEnd,to_string(nova->memLoc));
 		}
 		imprimeFormatoI(ADDI,$sp,$sp,to_string(tamanho+1));
 	}
@@ -672,7 +672,17 @@ int main()
 		}
 		else if(quad.op == "storeVet")
 		{
-			
+
+			if(ehNumero(quad.end1))//store de imediato
+			{
+				//coloca o imediato no registrador auxEnd
+				imprimeFormatoI(ADDI,$zero,$auxEnd,quad.end1);
+				imprimeFormatoI(SW,pegaRegistradorNumero(quad.end2),$auxEnd,"0");
+			}
+			else
+			{
+				imprimeFormatoI(SW,pegaRegistradorNumero(quad.end2),pegaRegistradorNumero(quad.end1),"0");
+			}
 		}
 		else if(quad.op == "jump")
 		{
@@ -703,23 +713,104 @@ int main()
 		}
 		else if(quad.op == "sgt")
 		{
-
+			if(ehNumero(quad.end1) && ehNumero(quad.end2))//os dois operadores são numeros
+			{
+				imprimeFormatoI(ADDI,$zero,pegaRegistradorNumero(quad.end3),quad.end1);//coloca o primeiro operando no registrador de destino RT
+				imprimeFormatoI(SGTI,pegaRegistradorNumero(quad.end3),pegaRegistradorNumero(quad.end3),quad.end2);//verifico se o operando presente no registrador é maior q o imediato
+			}
+			else if (!ehNumero(quad.end1) && !ehNumero(quad.end2))//SLT
+			{
+				imprimeFormatoR(SGT,pegaRegistradorNumero(quad.end1),pegaRegistradorNumero(quad.end2),pegaRegistradorNumero(quad.end3));
+			}
+			else//SGTI
+			{
+				if(ehNumero(quad.end1))
+				{
+					imprimeFormatoI(SLTI,pegaRegistradorNumero(quad.end2),pegaRegistradorNumero(quad.end3),quad.end1);
+				}
+				else
+				{
+					imprimeFormatoI(SGTI,pegaRegistradorNumero(quad.end1),pegaRegistradorNumero(quad.end3),quad.end2);
+				}
+			}
 		}
 		else if(quad.op == "slet")
 		{
-
+			if(ehNumero(quad.end1) && ehNumero(quad.end2))//os dois operadores são numeros
+			{
+				imprimeFormatoI(ADDI,$zero,pegaRegistradorNumero(quad.end3),quad.end1);//coloca o primeiro operando no registrador de destino RT
+				imprimeFormatoI(SLETI,pegaRegistradorNumero(quad.end3),pegaRegistradorNumero(quad.end3),quad.end2);//verifico se o operando presente no registrador é menor/igual q o imediato
+			}
+			else if (!ehNumero(quad.end1) && !ehNumero(quad.end2))//SLET
+			{
+				imprimeFormatoR(SLET,pegaRegistradorNumero(quad.end1),pegaRegistradorNumero(quad.end2),pegaRegistradorNumero(quad.end3));
+			}
+			else//SLET
+			{
+				if(ehNumero(quad.end1))
+				{
+					imprimeFormatoI(SGETI,pegaRegistradorNumero(quad.end2),pegaRegistradorNumero(quad.end3),quad.end1);
+				}
+				else
+				{
+					imprimeFormatoI(SLETI,pegaRegistradorNumero(quad.end1),pegaRegistradorNumero(quad.end3),quad.end2);
+				}
+			}
 		}
 		else if(quad.op == "sdt")
 		{
-
+			if(ehNumero(quad.end1) && ehNumero(quad.end2))//os dois operadores são numeros
+			{
+				imprimeFormatoI(ADDI,$zero,pegaRegistradorNumero(quad.end3),quad.end1);//coloca o primeiro operando no registrador de destino RT
+				imprimeFormatoI(SDTI,pegaRegistradorNumero(quad.end3),pegaRegistradorNumero(quad.end3),quad.end2);//verifico se o operando presente no registrador é diferente do imediato
+			}
+			else if (!ehNumero(quad.end1) && !ehNumero(quad.end2))//SLET
+			{
+				imprimeFormatoR(SDT,pegaRegistradorNumero(quad.end1),pegaRegistradorNumero(quad.end2),pegaRegistradorNumero(quad.end3));
+			}
+			else//SDTI
+			{
+				imprimeFormatoI(SDTI,pegaRegistradorNumero(quad.end1),pegaRegistradorNumero(quad.end3),quad.end2);	
+			}
 		}
-		else if(quad.op == "sdt")
+		else if(quad.op == "set")
 		{
-
+			if(ehNumero(quad.end1) && ehNumero(quad.end2))//os dois operadores são numeros
+			{
+				imprimeFormatoI(ADDI,$zero,pegaRegistradorNumero(quad.end3),quad.end1);//coloca o primeiro operando no registrador de destino RT
+				imprimeFormatoI(SETI,pegaRegistradorNumero(quad.end3),pegaRegistradorNumero(quad.end3),quad.end2);//verifico se o operando presente no registrador é diferente do imediato
+			}
+			else if (!ehNumero(quad.end1) && !ehNumero(quad.end2))//SLET
+			{
+				imprimeFormatoR(SET,pegaRegistradorNumero(quad.end1),pegaRegistradorNumero(quad.end2),pegaRegistradorNumero(quad.end3));
+			}
+			else//SDTI
+			{
+				imprimeFormatoI(SETI,pegaRegistradorNumero(quad.end1),pegaRegistradorNumero(quad.end3),quad.end2);	
+			}
 		}
 		else if(quad.op == "sget")
 		{
-
+			if(ehNumero(quad.end1) && ehNumero(quad.end2))//os dois operadores são numeros
+			{
+				imprimeFormatoI(ADDI,$zero,pegaRegistradorNumero(quad.end3),quad.end1);//coloca o primeiro operando no registrador de destino RT
+				imprimeFormatoI(SGETI,pegaRegistradorNumero(quad.end3),pegaRegistradorNumero(quad.end3),quad.end2);//verifico se o operando presente no registrador é maior/igual q o imediato
+			}
+			else if (!ehNumero(quad.end1) && !ehNumero(quad.end2))//SLET
+			{
+				imprimeFormatoR(SGET,pegaRegistradorNumero(quad.end1),pegaRegistradorNumero(quad.end2),pegaRegistradorNumero(quad.end3));
+			}
+			else//SLET
+			{
+				if(ehNumero(quad.end1))
+				{
+					imprimeFormatoI(SLET,pegaRegistradorNumero(quad.end2),pegaRegistradorNumero(quad.end3),quad.end1);
+				}
+				else
+				{
+					imprimeFormatoI(SGET,pegaRegistradorNumero(quad.end1),pegaRegistradorNumero(quad.end3),quad.end2);
+				}
+			}
 		}
 		else if(quad.op == "funInicio")
 		{	

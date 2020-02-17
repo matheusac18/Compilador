@@ -1,14 +1,14 @@
   Tipo: int
     Funcão - int - main - Linha: 5 Escopo: global
       Tipo: int
-        Var x Linha: 7 Escopo: main
+        Vetor x Linha: 7 Escopo: main
+          Const: 10
+      Tipo: int
+        Var y Linha: 8 Escopo: main
       Assign
-        VarID: x Line: 8 Escopo: main
+        VarID: y Line: 9 Escopo: main
         Const: 3
-      If
-        Op: <
-          VarID: x Line: 9 Escopo: main
-          Const: 10
-        Assign
-          VarID: x Line: 11 Escopo: main
-          Const: 10
+      Assign
+        VetID: x Line: 10 Escopo: main
+          Const: 8
+        VarID: y Line: 10 Escopo: main

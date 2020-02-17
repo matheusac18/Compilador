@@ -1,9 +1,9 @@
 funInicio,main,___,___
-allocaMemVar,main,x,___
-storeVar,3,x,main
+allocaMemVet,main,x,10
+allocaMemVar,main,y,___
+storeVar,3,y,main
 loadVar,main,x,t0
-slt,t0,10,t1
-ifFalso,t1,l0,___
-storeVar,10,x,main
-label_op,l0,___,___
+add,t0,8,t1
+loadVar,main,y,t2
+storeVet,t2,t1,___
 funFim,main,___,___
