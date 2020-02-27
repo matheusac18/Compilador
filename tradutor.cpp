@@ -15,7 +15,7 @@ enum instrucoes:int {ADD, SUB, MULT, DIV, AND, OR, NOR, SLT, SGT,SLET, SGET, SET
 enum registradores:int {$zero, $t0, $t1, $t2, $t3, $t4, $t5, $t6, $t7, $t8, $t9, $t10, $t11, $t12, $t13, $t14, $t15, $s0, $s1, $s2, $s3, $s4,
 					$s5, $s6, $s7, $s8, $s9, $auxEnd, $rf, $fp, $sp,$ra};
 string reg_string[] = { "$zero", "t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8", "t9", "t10", "t11", "t12", "t13", "t14", "t15", "$s0", "$s1", "$s2", "$s3", "$s4",
-					       "$s5", "$s6", "$s7", "$s8", "$s9", "$s10", "$rf", "$fp", "$sp", "$ra"};
+					       "$s5", "$s6", "$s7", "$s8", "$s9", "$aux", "$rf", "$fp", "$sp", "$ra"};
 
 string inst_string[] = {"add", "sub", "mult", "div", "and", "or", "nor", "slt", "sgt","slet", "sget", "set", "sdt", "sgti","sleti", "sgeti", "seti", "sdti","sll", "srl","mod","jr","addi","multi","divi","andi","bltz", "bgtz","beqz", 
 				 			 "beq", "bne", "lw", "sw", "ori", "slti", "modi", "jump","jal","nop","halt","input","output","lui"};
@@ -61,7 +61,7 @@ class nodeInstrucao
 	registradores rd;
 	string imediato;
 	string endereco;
-	int tipo; // 1- Tipo R, 2 - Tipo I, 3 - Tipo J
+	int tipo; // 1- Tipo R, 2 - Tipo I, 3 - Tipo J, 4 - IO
 	nodeInstrucao *prox;
 };
 
@@ -99,7 +99,7 @@ ofstream assemblyFile;
 listaInstrucao lst;
 
 //posição a partir da qual se iniciam as declarações de variveis dentro de um frame
-int frameIni = 0;
+int frameIni = 2;
 
 void imprimeFormatoR(instrucoes inst, registradores rs, registradores rt, registradores rd)
 {
@@ -207,6 +207,34 @@ void imprimeFormatoJ(instrucoes inst, string endereco)
 		nova->prox = NULL;
 		nova->tipo = 3;
 		
+		
+		lst.ultima->prox = nova;
+		lst.ultima = nova;
+	}
+
+	numLinha++;
+}
+
+void imprimeInstrucaoIO(instrucoes inst, registradores rs)
+{
+	if(lst.primeira == NULL)
+	{
+		nodeInstrucao *nova = new nodeInstrucao();
+		nova->inst = inst;
+		nova->rs = rs;
+		nova->prox = NULL;
+		nova->tipo = 4;
+		
+		lst.primeira = nova;
+		lst.ultima = nova;
+	}
+	else
+	{
+		nodeInstrucao *nova = new nodeInstrucao();
+		nova->inst = inst;
+		nova->rs = rs;
+		nova->prox = NULL;
+		nova->tipo = 4;
 		
 		lst.ultima->prox = nova;
 		lst.ultima = nova;
@@ -581,6 +609,15 @@ void imprimeInstrucoes()
 				numLinha++;
 			}
 		}
+		else if(p->tipo == 4)
+		{
+			string instrucao = inst_string[p->inst]+' '+reg_string[p->rs];
+			if(assemblyFile.is_open())
+			{
+				assemblyFile<<instrucao<<endl;
+				numLinha++;
+			}
+		}
 	}
 }
 
@@ -659,7 +696,48 @@ int main()
 		}
 		else if(quad.op == "call")
 		{
-
+			if(quad.end1 == "output")
+			{
+				if(ehNumero(parametros.top()))
+				{
+					imprimeFormatoI(ADDI,$zero,$auxEnd,parametros.top());
+					parametros.pop();
+					imprimeInstrucaoIO(OUTPUT,$auxEnd);
+				}
+				else
+				{
+					imprimeInstrucaoIO(OUTPUT,pegaRegistradorNumero(parametros.top()));
+					parametros.pop();
+				}
+			}
+			else if(quad.end1 == "input")
+			{
+				imprimeInstrucaoIO(INPUT,$rf);
+			}
+			else
+			{
+				imprimeFormatoI(SW,$sp,$fp,"0");//armazena o fp antigo na pilha
+				imprimeFormatoI(ADDI,$sp,$fp,"0");//novo fp
+				imprimeFormatoI(ADDI,$sp,$sp,"1");//sobe a pilha em 1
+				int qtdeParam = stoi(quad.end2);
+				for(int i = qtdeParam+frameIni-1;i>=frameIni;i--)
+				{
+					if(ehNumero(parametros.top()))
+					{
+						imprimeFormatoI(ADDI,$zero,$auxEnd,parametros.top());
+						parametros.pop();
+						imprimeFormatoI(SW,$fp,$auxEnd,to_string(i));
+					}
+					else
+					{
+						imprimeFormatoI(SW,$fp,pegaRegistradorNumero(parametros.top()),to_string(i));
+						parametros.pop();
+					}
+				}
+				imprimeFormatoJ(JAL,quad.end1);
+				imprimeFormatoI(ADDI,$fp,$sp,"0");//copia o fp para sp
+				imprimeFormatoI(LW,$fp,$fp,"0");//restaria o antifo fp
+			}
 		}
 		else if(quad.op == "move")
 		{
@@ -815,10 +893,19 @@ int main()
 		else if(quad.op == "funInicio")
 		{	
 			insereLabel(quad.end1);
+			if(quad.end1!="main")
+			{
+				imprimeFormatoI(SW,$fp,$ra,"1");//salva o endereco de retorno na primera posicão do frame
+				imprimeFormatoI(ADDI,$sp,$sp,"1");
+			}
 		}
 		else if(quad.op == "funFim")
 		{
-
+			if(quad.end1!="main")
+			{
+				imprimeFormatoI(LW,$fp,$ra,"1");//carrega o endereco de retorno da primera posicão do frame para o $ra
+				imprimeFormatoR(JR,$ra,$zero,$zero);//realiza o salto de retorno
+			}
 		}
 		else if(quad.op == "loadVar")
 		{
@@ -885,9 +972,15 @@ int main()
 			}
 
 		}
-		else if(quad.op == "retornaValor")
+		else if(quad.op == "empilha")
 		{
-
+			imprimeFormatoI(SW,$sp,pegaRegistradorNumero("t"+quad.end1),"0");
+			imprimeFormatoI(ADDI,$sp,$sp,"1");//incrementa ponteiro da pilha
+		}
+		else if(quad.op == "desempilha")
+		{
+			imprimeFormatoI(ADDI,$sp,$sp,"-1");//incrementa ponteiro da pilha
+			imprimeFormatoI(LW,$sp,pegaRegistradorNumero("t"+quad.end1),"0");
 		}
 		else if(quad.op == "param")
 		{

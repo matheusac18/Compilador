@@ -1,5 +1,8 @@
                     Nome                   Var/func  Tipo         Escopo                       Número de linhas
 -----------------------------------------  --------  ----  --------------------  ------------------------------------------------
-main                                       funcao    int   global                5, 
-y                                          variável  int   main                  8, 9, 10, 
-x                                          variável  int   main                  7, 10, 
+z                                          variável  int   calc                  4, 5, 6, 
+main                                       funcao    void  global                9, 
+y                                          variável  int   calc                  2, 5, 
+calc                                       funcao    int   global                2, 14, 
+x                                          variável  int   main                  11, 12, 13, 14, 14, 15, 
+x                                          variável  int   calc                  2, 5, 

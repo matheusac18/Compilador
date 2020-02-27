@@ -8,7 +8,8 @@ static void cGen(TreeNode *t);
 
 QuadLista inicio = NULL;//lista de quadruplas
 
-const char *OpString[] = {"add","sub","mult","divisao","ifFalso", "call", "move","label_op","storeVet","jump","slt","sgt","slet","sget","set","sdt","funInicio","funFim", "loadVar","loadVet","storeVar","allocaMemVar","allocaMemVet","retornaValor","param"};
+const char *OpString[] = {"add","sub","mult","divisao","ifFalso", "call", "move","label_op","storeVet","jump","slt","sgt","slet","sget","set","sdt","funInicio","funFim", "loadVar","loadVet","storeVar","allocaMemVar","allocaMemVet","param","empilha","desempilha"};
+
 
 Endereco atual;
 
@@ -17,8 +18,12 @@ int label;
 int qtdeReg = 16;
 
 
+int regUso[32];
 static void genExp(TreeNode *t);
 static void genStmt(TreeNode *t);
+
+
+
 
 Operacao verificaOp(TokenType k)
 {
@@ -58,6 +63,21 @@ Operacao verificaOp(TokenType k)
 			break;
 	}
 }
+
+void verificaReg(char *reg)
+{
+	char n[3];
+	int nReg = -1;
+	
+	strcpy(n,reg);
+
+	n[0] = '0';
+
+	nReg = atoi(n);
+	regUso[nReg] = 0;
+	printf("\n%d",nReg);
+}
+
 /*insere um novo nó na lista de quadruplas*/
 void inseriNo(Operacao op, Endereco e1, Endereco e2, Endereco e3)
 {
@@ -86,13 +106,60 @@ void inseriNo(Operacao op, Endereco e1, Endereco e2, Endereco e3)
 		l->prox = novoNo;
 	}
 
+
+	if(op == add || op == mult || op == sub || op == divisao || op == slt || op == sgt || op == slet || op == sget || op == set || op == sdt || op == storeVet)
+	{
+		if(e1.tipo == String)
+			verificaReg(e1.conteudo.nome);
+		if(e2.tipo == String)
+				verificaReg(e2.conteudo.nome);
+	}
+	else if(op == ifFalso || op == loadVet || op == storeVar || op == move)
+	{
+		if(e1.tipo == String)
+			verificaReg(e1.conteudo.nome);
+	}
+
+
 }
 
+void empilhaReg()
+{
+	int i = 0;
+	Endereco e1,e2;
+	e2.tipo = Vazio;
+	for(i=0;i<qtdeReg;i++)
+	{
+		if(regUso[i]==1)
+		{
+			e1.tipo = Const;
+			e1.conteudo.val = i;
+			inseriNo(empilha,e1,e2,e2);
+		}
+	}
+}
+
+void desempilhaReg()
+{
+	int i = 0;
+	Endereco e1,e2;
+	e2.tipo = Vazio;
+	for(i=qtdeReg-1;i>=0;i--)
+	{
+		if(regUso[i]==1)
+		{
+			e1.tipo = Const;
+			e1.conteudo.val = i;
+			inseriNo(desempilha,e1,e2,e2);
+		}
+	}
+}
 
 char *criaVariavelTemp()
 {
 	int n = 0;
 	n = temporario%qtdeReg;
+	regUso[n] = 1;
 	char *temp = (char*) malloc((n%10+2)*sizeof(char));
 	char *num = (char*) malloc(((n%10+1)));
 	sprintf(num,"%d", n);
@@ -367,12 +434,23 @@ static void genStmt(TreeNode *t)
 			e1.tipo = String;
 			e1.conteudo.nome = (char*) malloc(strlen(t->attr.name)*sizeof(char));
 			strcpy(e1.conteudo.nome,t->attr.name);
-
 			e2.tipo = Const;
 			e2.conteudo.val = qtdeParam;
 			e3.tipo = Vazio;
-			inseriNo(call,e1,e2,e3);
 
+			char verificaOutput[20];
+			char verificaInput[20];
+			strcpy(verificaOutput,"output");
+			strcpy(verificaInput,"input");
+
+			if(strcmp(verificaOutput,e1.conteudo.nome)!=0 && strcmp(verificaInput,e1.conteudo.nome)!=0)
+				empilhaReg();
+
+			inseriNo(call,e1,e2,e3);
+			
+			if(strcmp(verificaOutput,e1.conteudo.nome)!=0 && strcmp(verificaInput,e1.conteudo.nome)!=0)
+				desempilhaReg();
+			
 			atual.tipo = String;
 			char endRetorno[10] = "$rf";
 			atual.conteudo.nome = (char*) malloc(10*sizeof(char));
@@ -560,6 +638,11 @@ void imprimeIntemediario()
 
 void gerarIntermediario(TreeNode *t)
 {
+	int i = 0;
+	for(i=0;i<qtdeReg;i++)
+	{
+		regUso[i] = 0;
+	}
 	cGen(t);
 	imprimeIntemediario();
 }

@@ -2,7 +2,10 @@
 #define _CODIGOINTERMEDIARIO_H_
 #include "globals.h"
 
-typedef enum {add,sub,mult,divisao,ifFalso, call, move,label_op, storeVet,jump,slt,sgt,slet,sget,set,sdt, funInicio, funFim, loadVar,loadVet, storeVar, allocaMemVar, allocaMemVet,retornarValor,param}Operacao;
+typedef enum {add,sub,mult,divisao,ifFalso, call, move,label_op, 
+storeVet,jump,slt,sgt,slet,sget,set,sdt, 
+funInicio, funFim, loadVar,loadVet, storeVar, allocaMemVar, allocaMemVet,
+param,empilha,desempilha}Operacao;
 
 typedef enum {Vazio,Const,String} TipoEnd;
 

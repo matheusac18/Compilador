@@ -1,14 +1,32 @@
   Tipo: int
-    Funcão - int - main - Linha: 5 Escopo: global
+    Funcão - int - calc - Linha: 2 Escopo: global
       Tipo: int
-        Vetor x Linha: 7 Escopo: main
+        Var x Linha: 2 Escopo: calc
+      Tipo: int
+        Var y Linha: 2 Escopo: calc
+      Tipo: int
+        Var z Linha: 4 Escopo: calc
+      Assign
+        VarID: z Line: 5 Escopo: calc
+        Op: +
+          VarID: x Line: 5 Escopo: calc
+          VarID: y Line: 5 Escopo: calc
+      Return
+        VarID: z Line: 6 Escopo: calc
+  Tipo: void
+    Funcão - void - main - Linha: 9 Escopo: global
+      Tipo: int
+        Var x Linha: 11 Escopo: main
+      Assign
+        VarID: x Line: 12 Escopo: main
+        Const: 0
+      Assign
+        VarID: x Line: 13 Escopo: main
+        Call: input Linha: 13
+      Assign
+        VarID: x Line: 14 Escopo: main
+        Call: calc Linha: 14
+          VarID: x Line: 14 Escopo: main
           Const: 10
-      Tipo: int
-        Var y Linha: 8 Escopo: main
-      Assign
-        VarID: y Line: 9 Escopo: main
-        Const: 3
-      Assign
-        VetID: x Line: 10 Escopo: main
-          Const: 8
-        VarID: y Line: 10 Escopo: main
+      Call: output Linha: 15
+        VarID: x Line: 15 Escopo: main

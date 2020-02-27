@@ -1,12 +1,18 @@
-/* programa para ordena��o por sele��o de 
-   uma matriz com dez elementos. */
 
-
-int main(void)
+int calc(int x, int y)
 {
-	int x[10];
-	int y;
-	y = 3;
-	x[8] =  y;
+	int z;
+	z = x + y;
+	return z;
 }
 
+void main(void)
+{
+	int x;
+	x = 0;
+	x = input(); 	
+	x = calc(x,10);
+	output(x);
+}
+
+			
