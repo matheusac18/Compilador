@@ -1,23 +1,26 @@
-#include <iostream> 
+#include <iostream>
 #include <fstream>
 #include <string>
-#include <list> 
-#include <iterator> 
+#include <list>
+#include <iterator>
 #include <vector>
-#include <stack>  
+#include <stack>
 #include <sstream>
-#include <locale>   
+#include <locale>
 
-using namespace std; 
+using namespace std;
 
-enum instrucoes:int {ADD, SUB, MULT, DIV, AND, OR, NOR, SLT, SGT,SLET, SGET, SET, SDT, SGTI,SLETI, SGETI, SETI, SDTI, SLL, SRL,MOD,JR,ADDI,MULTI,DIVI,ANDI,BLTZ, BGTZ,BEQZ, 
+enum instrucoes:int {ADD, SUB, MULT, DIV, AND, OR, NOR, SLT, SGT,SLET, SGET, SET, SDT, SGTI,SLETI, SGETI, SETI, SDTI, SLL, SRL,MOD,JR,ADDI,MULTI,DIVI,ANDI,BLTZ, BGTZ,BEQZ,
 				 BEQ, BNE, LW, SW, ORI, SLTI, MODI, JUMP,JAL,NOP,HALT,INPUT,OUTPUT,LUI};
 enum registradores:int {$zero, $t0, $t1, $t2, $t3, $t4, $t5, $t6, $t7, $t8, $t9, $t10, $t11, $t12, $t13, $t14, $t15, $s0, $s1, $s2, $s3, $s4,
 					$s5, $s6, $s7, $s8, $s9, $auxEnd, $rf, $fp, $sp,$ra};
 string reg_string[] = { "$zero", "t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8", "t9", "t10", "t11", "t12", "t13", "t14", "t15", "$s0", "$s1", "$s2", "$s3", "$s4",
 					       "$s5", "$s6", "$s7", "$s8", "$s9", "$aux", "$rf", "$fp", "$sp", "$ra"};
 
-string inst_string[] = {"add", "sub", "mult", "div", "and", "or", "nor", "slt", "sgt","slet", "sget", "set", "sdt", "sgti","sleti", "sgeti", "seti", "sdti","sll", "srl","mod","jr","addi","multi","divi","andi","bltz", "bgtz","beqz", 
+string reg_string_imprimir[] = { "r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15", "r16", "r17", "r18", "r19", "r20",
+								 					       "r21", "r22", "r23", "r24", "r25", "r26", "r27", "r28", "r29", "r30","r31"};
+
+string inst_string[] = {"add", "sub", "mult", "div", "and", "or", "nor", "slt", "sgt","slet", "sget", "set", "sdt", "sgti","sleti", "sgeti", "seti", "sdti","sll", "srl","mod","jr","addi","multi","divi","andi","bltz", "bgtz","beqz",
 				 			 "beq", "bne", "lw", "sw", "ori", "slti", "modi", "jump","jal","nop","halt","input","output","lui"};
 
 int numLinha = 0;
@@ -89,7 +92,7 @@ nodeLabel *labelLoc = NULL;
 //pilha com os parametros
 stack<string> parametros;
 
-//arquivo de entrada 
+//arquivo de entrada
 ifstream codInt;
 
 //arquivo de saida
@@ -118,7 +121,7 @@ void imprimeFormatoR(instrucoes inst, registradores rs, registradores rt, regist
 		nova->rd = rd;
 		nova->prox = NULL;
 		nova->tipo = 1;
-		
+
 		lst.primeira = nova;
 		lst.ultima = nova;
 	}
@@ -131,7 +134,7 @@ void imprimeFormatoR(instrucoes inst, registradores rs, registradores rt, regist
 		nova->rd = rd;
 		nova->prox = NULL;
 		nova->tipo = 1;
-		
+
 		lst.ultima->prox = nova;
 		lst.ultima = nova;
 	}
@@ -141,7 +144,7 @@ void imprimeFormatoR(instrucoes inst, registradores rs, registradores rt, regist
 
 void imprimeFormatoI(instrucoes inst, registradores rs, registradores rt, string imediato)
 {
-	cout << "Imprime I" << endl;
+	//cout << "Imprime I" << endl;
 	/*string instrucao = inst_string[inst]+' '+reg_string[rs]+' '+reg_string[rt]+' '+imediato;
 	if(assemblyFile.is_open())
 	{
@@ -157,7 +160,7 @@ void imprimeFormatoI(instrucoes inst, registradores rs, registradores rt, string
 		nova->imediato = imediato;
 		nova->prox = NULL;
 		nova->tipo = 2;
-		
+
 		lst.primeira = nova;
 		lst.ultima = nova;
 	}
@@ -180,7 +183,7 @@ void imprimeFormatoI(instrucoes inst, registradores rs, registradores rt, string
 
 void imprimeFormatoJ(instrucoes inst, string endereco)
 {
-	cout << "Imprime J" << endl;
+	//cout << "Imprime J" << endl;
 	/*string instrucao = inst_string[inst]+' '+endereco;
 	if(assemblyFile.is_open())
 	{
@@ -195,7 +198,7 @@ void imprimeFormatoJ(instrucoes inst, string endereco)
 		nova->endereco = endereco;
 		nova->prox = NULL;
 		nova->tipo = 3;
-		
+
 		lst.primeira = nova;
 		lst.ultima = nova;
 	}
@@ -206,8 +209,8 @@ void imprimeFormatoJ(instrucoes inst, string endereco)
 		nova->endereco = endereco;
 		nova->prox = NULL;
 		nova->tipo = 3;
-		
-		
+
+
 		lst.ultima->prox = nova;
 		lst.ultima = nova;
 	}
@@ -224,7 +227,7 @@ void imprimeInstrucaoIO(instrucoes inst, registradores rs)
 		nova->rs = rs;
 		nova->prox = NULL;
 		nova->tipo = 4;
-		
+
 		lst.primeira = nova;
 		lst.ultima = nova;
 	}
@@ -235,7 +238,7 @@ void imprimeInstrucaoIO(instrucoes inst, registradores rs)
 		nova->rs = rs;
 		nova->prox = NULL;
 		nova->tipo = 4;
-		
+
 		lst.ultima->prox = nova;
 		lst.ultima = nova;
 	}
@@ -407,7 +410,7 @@ void insereVariavel(string escopo, string nome)
 		else//escopo não está na lista
 		{
 			nodeEscopo *novo = new nodeEscopo();
-			novo->posAtualMem = 0;
+			novo->posAtualMem = frameIni;
 			novo->nome = escopo;
 			novo->prox = NULL;
 
@@ -432,11 +435,11 @@ void imprimeVariaveis()
 	nodeVariavel *q;
 	do
 	{
-		cout << "Escopo:" << p->nome << endl;
+		//cout << "Escopo:" << p->nome << endl;
 		q=p->var;
 		do
 		{
-			cout<<"  "<<q->nome<< " pos: "<< q->memLoc<<endl;
+			//cout<<"  "<<q->nome<< " pos: "<< q->memLoc<<endl;
 			q=q->prox;
 		}while(q!= NULL);
 		p =p->prox;
@@ -467,7 +470,7 @@ void imprimeLabels()
 	nodeLabel *p = labelLoc;
 	do
 	{
-		cout << "Label:" << p->nome << endl;
+		//cout << "Label:" << p->nome << endl;
 		p =p->prox;
 	}while(p != NULL);
 
@@ -516,13 +519,13 @@ void pegaLinhaIntermediario(quadrupla *quad)
 	     	getline(s_stream, substr, ','); //get first string delimited by comma
 	      	result.push_back(substr);
    		}
-	 
+
 	    if(result.size()==4)
 	    {
 	    	quad->op = result[0];
 		    quad->end1 = result[1];
 		    quad->end2 = result[2];
-		    quad->end3 = result[3];	
+		    quad->end3 = result[3];
 	    }
 	    else//pega uma linha em branco no fim do arquivo -> evita executar a ultima operação duas vezes
 	    {
@@ -575,7 +578,8 @@ void imprimeInstrucoes()
 	{
 		if(p->tipo == 1)
 		{
-			string instrucao = inst_string[p->inst]+' '+reg_string[p->rs]+' '+reg_string[p->rt]+' '+reg_string[p->rd];
+			string instrucao = inst_string[p->inst]+' '+reg_string_imprimir[p->rs]+' '+reg_string_imprimir[p->rt]+' '+reg_string_imprimir[p->rd];
+			//string instrucao = inst_string[p->inst]+' '+reg_string_imprimir[p->rs]+' '+p->rt+' '+reg_string_imprimir[p->rd];
 			if(assemblyFile.is_open())
 			{
 				assemblyFile<<instrucao<<endl;
@@ -588,11 +592,11 @@ void imprimeInstrucoes()
 
 			if(p->inst == BEQ)
 			{
-				instrucao = inst_string[p->inst]+' '+reg_string[p->rs]+' '+reg_string[p->rt]+' '+to_string(labelLinha(p->imediato));//substituição do label pelo numero da linha
+				instrucao = inst_string[p->inst]+' '+reg_string_imprimir[p->rs]+' '+reg_string_imprimir[p->rt]+' '+to_string(labelLinha(p->imediato));//substituição do label pelo numero da linha
 			}
 			else
 			{
-				instrucao = inst_string[p->inst]+' '+reg_string[p->rs]+' '+reg_string[p->rt]+' '+p->imediato;
+				instrucao = inst_string[p->inst]+' '+reg_string_imprimir[p->rs]+' '+reg_string_imprimir[p->rt]+' '+p->imediato;
 			}
 			if(assemblyFile.is_open())
 			{
@@ -611,7 +615,7 @@ void imprimeInstrucoes()
 		}
 		else if(p->tipo == 4)
 		{
-			string instrucao = inst_string[p->inst]+' '+reg_string[p->rs];
+			string instrucao = inst_string[p->inst]+' '+reg_string_imprimir[p->rs];
 			if(assemblyFile.is_open())
 			{
 				assemblyFile<<instrucao<<endl;
@@ -630,6 +634,9 @@ int main()
 	string line;
 	lst.primeira = NULL;
 	lst.ultima = NULL;
+
+	imprimeFormatoJ(JUMP,"main");
+
 	while(!codInt.eof())
 	{
 		pegaLinhaIntermediario(&quad);
@@ -746,7 +753,7 @@ int main()
 		else if(quad.op == "label_op")
 		{
 			insereLabel(quad.end1);//insere o label na lista
-			
+
 		}
 		else if(quad.op == "storeVet")
 		{
@@ -848,7 +855,7 @@ int main()
 			}
 			else//SDTI
 			{
-				imprimeFormatoI(SDTI,pegaRegistradorNumero(quad.end1),pegaRegistradorNumero(quad.end3),quad.end2);	
+				imprimeFormatoI(SDTI,pegaRegistradorNumero(quad.end1),pegaRegistradorNumero(quad.end3),quad.end2);
 			}
 		}
 		else if(quad.op == "set")
@@ -864,7 +871,7 @@ int main()
 			}
 			else//SDTI
 			{
-				imprimeFormatoI(SETI,pegaRegistradorNumero(quad.end1),pegaRegistradorNumero(quad.end3),quad.end2);	
+				imprimeFormatoI(SETI,pegaRegistradorNumero(quad.end1),pegaRegistradorNumero(quad.end3),quad.end2);
 			}
 		}
 		else if(quad.op == "sget")
@@ -891,7 +898,7 @@ int main()
 			}
 		}
 		else if(quad.op == "funInicio")
-		{	
+		{
 			insereLabel(quad.end1);
 			if(quad.end1!="main")
 			{
@@ -918,7 +925,7 @@ int main()
 			{
 				imprimeFormatoI(LW,$fp,pegaRegistradorNumero(quad.end3),memLoc);
 			}
-			cout << "Buscou na mem" << endl;
+			//cout << "Buscou na mem" << endl;
 		}
 		else if(quad.op == "loadVet")
 		{
@@ -984,13 +991,13 @@ int main()
 		}
 		else if(quad.op == "param")
 		{
-			cout << "Empilhando parametro" << endl;
+			//cout << "Empilhando parametro" << endl;
 			parametros.push(quad.end1);
 		}
 
 
 	}
-	cout << "Imprimindo variaveis: " << endl;
+	//cout << "Imprimindo variaveis: " << endl;
 	//imprimeVariaveis();
 	imprimeInstrucoes();
 	codInt.close();
@@ -1001,6 +1008,6 @@ int main()
 	cout << n.nome << endl;
 	string line;
 	codInt.open("intermediario.txt");*/
-	
+
 
 }

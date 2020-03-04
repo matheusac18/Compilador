@@ -1,35 +1,36 @@
-sw $fp $ra 1
-addi $sp $sp 1
-addi $sp $sp 1
-addi $sp $sp 1
-addi $sp $sp 1
-lw $fp t0 2
-lw $fp t1 3
-add t0 t1 t2
-sw $fp t2 4
-lw $fp t3 4
-addi t3 $rf 0
-lw $fp $ra 1
-jr $ra $zero $zero
-addi $sp $sp 1
-addi $zero $aux 0
-sw $fp $aux 0
-input $rf
-sw $fp $rf 0
-lw $fp t4 0
-sw $sp t4 0
-addi $sp $sp 1
-sw $sp $fp 0
-addi $sp $fp 0
-addi $sp $sp 1
-addi $zero $aux 10
-sw $fp $aux 3
-sw $fp t4 2
-jal 0
-addi $fp $sp 0
-lw $fp $fp 0
-addi $sp $sp -1
-lw $sp t4 0
-sw $fp $rf 0
-lw $fp t5 0
-output t5
+jump 14
+sw r29 r31 1
+addi r30 r30 1
+addi r30 r30 1
+addi r30 r30 1
+addi r30 r30 1
+lw r29 r1 2
+lw r29 r2 3
+add r1 r2 r3
+sw r29 r3 4
+lw r29 r4 4
+addi r4 r28 0
+lw r29 r31 1
+jr r31 r0 r0
+addi r30 r30 1
+addi r0 r27 0
+sw r29 r27 2
+input r28
+sw r29 r28 2
+lw r29 r5 2
+sw r30 r5 0
+addi r30 r30 1
+sw r30 r29 0
+addi r30 r29 0
+addi r30 r30 1
+addi r0 r27 10
+sw r29 r27 3
+sw r29 r5 2
+jal 1
+addi r29 r30 0
+lw r29 r29 0
+addi r30 r30 -1
+lw r30 r5 0
+sw r29 r28 2
+lw r29 r6 2
+output r6
