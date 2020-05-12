@@ -8,7 +8,8 @@ static void cGen(TreeNode *t);
 
 QuadLista inicio = NULL;//lista de quadruplas
 
-const char *OpString[] = {"add","sub","mult","divisao","ifFalso", "call", "move","label_op","storeVet","jump","slt","sgt","slet","sget","set","sdt","funInicio","funFim", "loadVar","loadVet","storeVar","allocaMemVar","allocaMemVet","param","empilha","desempilha"};
+const char *OpString[] = {"add","sub","mult","divisao","ifFalso", "call", "move","label_op","storeVet","jump","slt","sgt","slet","sget",
+"set","sdt","funInicio","funFim", "loadVar","loadVet","storeVar","allocaMemVar","allocaMemVet","param","empilha","desempilha"};
 
 
 Endereco atual;
@@ -75,7 +76,6 @@ void verificaReg(char *reg)
 
 	nReg = atoi(n);
 	regUso[nReg] = 0;
-	printf("\n%d",nReg);
 }
 
 /*insere um novo nó na lista de quadruplas*/
