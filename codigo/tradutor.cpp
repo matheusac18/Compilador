@@ -573,7 +573,7 @@ int labelLinha(string label)
 void imprimeInstrucoes()
 {
 	nodeInstrucao *p;
-
+	int n = 0;
 	for(p=lst.primeira;p!=NULL;p = p->prox)
 	{
 		if(p->tipo == 1)
@@ -592,7 +592,7 @@ void imprimeInstrucoes()
 
 			if(p->inst == BEQ)
 			{
-				instrucao = inst_string[p->inst]+' '+reg_string_imprimir[p->rs]+' '+reg_string_imprimir[p->rt]+' '+to_string(labelLinha(p->imediato));//substituição do label pelo numero da linha
+				instrucao = inst_string[p->inst]+' '+reg_string_imprimir[p->rs]+' '+reg_string_imprimir[p->rt]+' '+to_string(labelLinha(p->imediato)-n-1);//substituição do label pelo numero da linha
 			}
 			else
 			{
@@ -622,6 +622,7 @@ void imprimeInstrucoes()
 				numLinha++;
 			}
 		}
+		n++;
 	}
 }
 

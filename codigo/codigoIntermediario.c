@@ -65,7 +65,7 @@ Operacao verificaOp(TokenType k)
 	}
 }
 
-void verificaReg(char *reg)
+void liberaReg(char *reg)
 {
 	char n[3];
 	int nReg = -1;
@@ -110,14 +110,14 @@ void inseriNo(Operacao op, Endereco e1, Endereco e2, Endereco e3)
 	if(op == add || op == mult || op == sub || op == divisao || op == slt || op == sgt || op == slet || op == sget || op == set || op == sdt || op == storeVet)
 	{
 		if(e1.tipo == String)
-			verificaReg(e1.conteudo.nome);
+			liberaReg(e1.conteudo.nome);
 		if(e2.tipo == String)
-				verificaReg(e2.conteudo.nome);
+			liberaReg(e2.conteudo.nome);
 	}
 	else if(op == ifFalso || op == loadVet || op == storeVar || op == move)
 	{
 		if(e1.tipo == String)
-			verificaReg(e1.conteudo.nome);
+			liberaReg(e1.conteudo.nome);
 	}
 
 
@@ -155,7 +155,7 @@ void desempilhaReg()
 	}
 }
 
-char *criaVariavelTemp()
+char *solicitaRegTemp()
 {
 	int n = 0;
 	n = temporario%qtdeReg;
@@ -262,7 +262,7 @@ static void genStmt(TreeNode *t)
 				strcpy(e2.conteudo.nome,t->child[0]->attr.name);
 
 				//endereço do registrador temporario
-				regTemp = criaVariavelTemp();
+				regTemp = solicitaRegTemp();
 				e3.tipo = String;
 				e3.conteudo.nome = (char*) malloc(strlen(regTemp)*sizeof(char));
 				strcpy(e3.conteudo.nome,regTemp);
@@ -279,7 +279,7 @@ static void genStmt(TreeNode *t)
 				e2 = atual;
 
 				//temporario com endereço final
-				regTemp = criaVariavelTemp();
+				regTemp = solicitaRegTemp();
 				e3.tipo = String;
 				e3.conteudo.nome = (char*) malloc(strlen(regTemp)*sizeof(char));
 				strcpy(e3.conteudo.nome,regTemp);
@@ -474,7 +474,7 @@ static void genExp(TreeNode *t)
 			e1 = atual;
 			cGen(t->child[1]);
 			e2 = atual;
-			char *dest = criaVariavelTemp();
+			char *dest = solicitaRegTemp();
 			e3.tipo = String;
 			e3.conteudo.nome = (char*) malloc(strlen(dest)*sizeof(char));
 			strcpy(e3.conteudo.nome,dest);
@@ -493,7 +493,7 @@ static void genExp(TreeNode *t)
 			strcpy(e2.conteudo.nome,t->attr.name);
 
 			//endereço do registrador temporario
-			regTemp = criaVariavelTemp();
+			regTemp = solicitaRegTemp();
 			atual.tipo = String;
 			atual.conteudo.nome = (char*) malloc(strlen(regTemp)*sizeof(char));
 			strcpy(atual.conteudo.nome,regTemp);
@@ -518,7 +518,7 @@ static void genExp(TreeNode *t)
 			strcpy(e2.conteudo.nome,t->attr.name);
 
 			//endereço do registrador temporario
-			regTemp = criaVariavelTemp();
+			regTemp = solicitaRegTemp();
 			e3.tipo = String;
 			e3.conteudo.nome = (char*) malloc(strlen(regTemp)*sizeof(char));
 			strcpy(e3.conteudo.nome,regTemp);
@@ -535,7 +535,7 @@ static void genExp(TreeNode *t)
 			e2 = atual;
 
 			//temporario com endereço final
-			regTemp = criaVariavelTemp();
+			regTemp = solicitaRegTemp();
 			e3.tipo = String;
 			e3.conteudo.nome = (char*) malloc(strlen(regTemp)*sizeof(char));
 			strcpy(e3.conteudo.nome,regTemp);
@@ -545,7 +545,7 @@ static void genExp(TreeNode *t)
 			e1 = e3;
 
 			//endereço do registrador temporario
-			regTemp = criaVariavelTemp();
+			regTemp = solicitaRegTemp();
 			atual.tipo = String;
 			atual.conteudo.nome = (char*) malloc(strlen(regTemp)*sizeof(char));
 			strcpy(atual.conteudo.nome,regTemp);

@@ -124,8 +124,10 @@ string converteInstrucao(instrucao *inst)
     //instrucoes do tipo R
     if(inst->op=="add" || inst->op=="sub" || inst->op=="sll" 
         || inst->op=="srl"|| inst->op=="mult" || inst->op=="div" 
-        || inst->op=="slt"|| inst->op=="and" || inst->op=="or"
-        || inst->op=="nor"|| inst->op=="mod" || inst->op=="jr")
+        || inst->op=="slt"|| inst->op=="sgt"|| inst->op=="slet"
+        || inst->op=="sget"|| inst->op=="set"|| inst->op=="sdt"
+        ||inst->op=="and" || inst->op=="or"|| inst->op=="nor"
+        || inst->op=="mod" || inst->op=="jr")
     {
         opcode = "000000";
         if(inst->op=="add")
