@@ -24,12 +24,7 @@ typedef struct
 	Endereco end1, end2, end3;
 }Quad;
 
-typedef struct QuadListaNo{
-  Quad quad;
-  struct QuadListaNo *prox;
-} * QuadLista;
 
 void gerarIntermediario(TreeNode *t);
-char *criaVariavelTemp();
 
 #endif

@@ -4,18 +4,21 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-static void cGen(TreeNode *t);
-
+typedef struct QuadListaNo{
+  Quad quad;
+  struct QuadListaNo *prox;
+} * QuadLista;
 QuadLista inicio = NULL;//lista de quadruplas
+
+static void cGen(TreeNode *t);
 
 const char *OpString[] = {"add","sub","mult","divisao","ifFalso", "call", "move","label_op","storeVet","jump","slt","sgt","slet","sget",
 "set","sdt","funInicio","funFim", "loadVar","loadVet","storeVar","allocaMemVar","allocaMemVet","param","empilha","desempilha"};
 
-
 Endereco atual;
 
 int temporario = 0;
-int label;
+int label = 0;
 int qtdeReg = 16;
 
 
@@ -413,15 +416,7 @@ static void genStmt(TreeNode *t)
 				while(k!=NULL)
 				{
 					qtdeParam = qtdeParam +1;
-					
-					if(k->nodeKind == StmtK)
-					{
-						genStmt(k);
-					}
-					else if(k->nodeKind == ExpK)
-					{
-						genExp(k);
-					}
+					cGen(k);
 					e2.tipo = Vazio;
 					e3.tipo = Vazio;
 					inseriNo(param,atual,e2,e3);
