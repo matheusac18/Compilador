@@ -276,6 +276,7 @@ static void genStmt(TreeNode *t)
 				//endereço base
 				e1 = e3;
 
+				//indice do vetor
 				cGen(t->child[0]->child[0]);
 
 				//deslocamento
@@ -288,6 +289,8 @@ static void genStmt(TreeNode *t)
 				strcpy(e3.conteudo.nome,regTemp);
 
 				inseriNo(add,e1,e2,e3);
+
+				//será atribuido ao vetor
 				cGen(t->child[1]);
 				e1 = atual;
 				e2 = e3;//registrador que contem o endereço do vetor
@@ -378,6 +381,7 @@ static void genStmt(TreeNode *t)
 
 			inseriNo(ifFalso,e1,condFalsa,e2);
 			cGen(t->child[1]);//corpo do while
+			
 			//salta para o inicio do while
 			e1.tipo = String;
 			e1.conteudo.nome = (char*) malloc(strlen(lblInicioWhile)*sizeof(char));
