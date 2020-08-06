@@ -630,7 +630,6 @@ int main()
 {
 
 	codInt.open("intermediario.txt");
-	assemblyFile.open("assembly.txt");
 	quadrupla quad;
 	string line;
 	lst.primeira = NULL;
@@ -1000,6 +999,7 @@ int main()
 	}
 	//cout << "Imprimindo variaveis: " << endl;
 	//imprimeVariaveis();
+	assemblyFile.open("assembly.txt");
 	imprimeInstrucoes();
 	codInt.close();
 	assemblyFile.close();
