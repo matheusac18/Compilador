@@ -679,23 +679,59 @@ int main()
 			{
 				if(ehNumero(quad.end1))
 				{
-					imprimeFormatoI(ADDI,$zero,pegaRegistradorNumero(quad.end3),quad.end1);
-					imprimeFormatoR(SUB,pegaRegistradorNumero(quad.end3),pegaRegistradorNumero(quad.end2),pegaRegistradorNumero(quad.end3));
+					imprimeFormatoI(ADDI,pegaRegistradorNumero(quad.end2),pegaRegistradorNumero(quad.end3),"-"+quad.end1);
 				}
 				else
 				{
-					imprimeFormatoI(ADDI,$zero,pegaRegistradorNumero(quad.end3),quad.end2);
-					imprimeFormatoR(SUB,pegaRegistradorNumero(quad.end1),pegaRegistradorNumero(quad.end3),pegaRegistradorNumero(quad.end3));
+					imprimeFormatoI(ADDI,pegaRegistradorNumero(quad.end1),pegaRegistradorNumero(quad.end3),"-"+quad.end2);
 				}
 			}
 		}
 		else if(quad.op == "mult")
 		{
-
+			if(ehNumero(quad.end1) && ehNumero(quad.end2))//os dois operadores são numeros
+			{
+				imprimeFormatoI(ADDI,$zero,pegaRegistradorNumero(quad.end3),quad.end1);//coloca o primeiro operando no registrador de destino RT
+				imprimeFormatoI(MULTI,pegaRegistradorNumero(quad.end3),pegaRegistradorNumero(quad.end3),quad.end2);
+			}
+			else if (!ehNumero(quad.end1) && !ehNumero(quad.end2))//os dois operandos são registradores
+			{
+				imprimeFormatoR(MULT,pegaRegistradorNumero(quad.end1),pegaRegistradorNumero(quad.end2),pegaRegistradorNumero(quad.end3));
+			}
+			else//multiplicação com imediato
+			{
+				if(ehNumero(quad.end1))
+				{
+					imprimeFormatoI(MULTI,pegaRegistradorNumero(quad.end2),pegaRegistradorNumero(quad.end3),quad.end1);
+				}
+				else
+				{
+					imprimeFormatoI(MULTI,pegaRegistradorNumero(quad.end1),pegaRegistradorNumero(quad.end3),quad.end2);
+				}
+			}
 		}
 		else if(quad.op == "divisao")
 		{
-
+			if(ehNumero(quad.end1) && ehNumero(quad.end2))//os dois operadores são numeros
+			{
+				imprimeFormatoI(ADDI,$zero,pegaRegistradorNumero(quad.end3),quad.end1);//coloca o primeiro operando no registrador de destino RT
+				imprimeFormatoI(DIVI,pegaRegistradorNumero(quad.end3),pegaRegistradorNumero(quad.end3),quad.end2);
+			}
+			else if (!ehNumero(quad.end1) && !ehNumero(quad.end2))//os dois operandos são registradores
+			{
+				imprimeFormatoR(DIV,pegaRegistradorNumero(quad.end1),pegaRegistradorNumero(quad.end2),pegaRegistradorNumero(quad.end3));
+			}
+			else//divisão com imediato
+			{
+				if(ehNumero(quad.end1))
+				{
+					imprimeFormatoI(DIVI,pegaRegistradorNumero(quad.end2),pegaRegistradorNumero(quad.end3),quad.end1);
+				}
+				else
+				{
+					imprimeFormatoI(DIVI,pegaRegistradorNumero(quad.end1),pegaRegistradorNumero(quad.end3),quad.end2);
+				}
+			}
 		}
 		else if(quad.op == "ifFalso")
 		{
